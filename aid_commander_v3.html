@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>AID COMMANDER PRO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="theme-color" content="#0a0a0c">
+<style>
+:root {
+    --bg: #0a0a0c;
+    --card: #1a1a1f;
+    --card2: #24242a;
+    --txt: #fafafa;
+    --sec: #a8a8b0;
+    --red: #ff5c5c;
+    --orange: #ffc040;
+    --green: #40e0a0;
+    --blue: #6eb5ff;
+    --purple: #b899ff;
+    --border: #454550;
+    --font: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);overflow-x:hidden;line-height:1.7;font-size:17px;-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.5px;touch-action:manipulation;font-family:var(--font)}
+.btn:active{transform:scale(.97);opacity:.88}
+.btn-red   {background:var(--red);   color:#fff;box-shadow:0 4px 20px rgba(239,68,68,.25)}
+.btn-green {background:var(--green); color:#000}
+.btn-blue  {background:var(--blue);  color:#fff}
+.btn-ghost {background:transparent;border:1px solid var(--border);color:var(--txt)}
+.btn-sm    {padding:7px 13px;font-size:11px;width:auto;border-radius:8px}
+
+.badge{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--border);color:var(--sec);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+
+/* ── PANIC OVERLAY ── */
+#panic-overlay{
+    position:fixed;inset:0;
+    background:#000;
+    z-index:9999;display:flex;flex-direction:column;
+    justify-content:center;align-items:center;
+    padding:28px;text-align:center;
+    overflow-y:auto;
+}
+
+/* STATE SELECTOR — стартовый экран */
+#panic-select{display:flex;flex-direction:column;align-items:center;width:100%;max-width:320px}
+.panic-select-label{
+    font-size:13px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+    color:#71717a;margin-bottom:14px;
+}
+.panic-big-stop{
+    width:100%;background:var(--red);color:#fff;
+    padding:22px;border-radius:18px;border:none;
+    font-size:38px;font-weight:900;letter-spacing:4px;
+    cursor:pointer;margin-bottom:20px;
+    box-shadow:0 0 50px rgba(239,68,68,.3);
+    transition:transform .1s;font-family:var(--font);
+}
+.panic-big-stop:active{transform:scale(.95)}
+.panic-states-label{
+    font-size:13px;letter-spacing:.15em;text-transform:uppercase;
+    color:#94949a;margin-bottom:10px;
+}
+.panic-states{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-bottom:20px}
+.panic-state-btn{
+    background:#1a1a1f;border:1px solid #454550;
+    color:#f5f5f7;padding:16px;border-radius:12px;
+    font-size:15px;font-weight:700;cursor:pointer;
+    transition:all .15s;font-family:var(--font);
+    text-transform:uppercase;letter-spacing:.5px;
+}
+.panic-state-btn:active{transform:scale(.97)}
+.panic-state-btn.s-freeze{border-color:rgba(59,130,246,.3);color:var(--blue)}
+.panic-state-btn.s-anger {border-color:rgba(245,158,11,.3);color:var(--orange)}
+.panic-state-btn.s-over  {border-color:rgba(139,92,246,.3);color:var(--purple)}
+.panic-state-btn.s-panic {border-color:rgba(239,68,68,.3); color:var(--red)}
+.panic-counter-row{font-size:14px;color:#94949a;margin-bottom:6px}
+.panic-counter-num{color:#b8b8c0;font-weight:900}
+.panic-enter-link{background:none;border:1px solid #454550;color:#b8b8c0;
+    padding:8px 18px;border-radius:8px;font-size:14px;cursor:pointer;
+    font-family:var(--font);margin-top:4px;}
+
+/* ACTIVE PROTOCOL screen */
+#panic-active{display:none;flex-direction:column;align-items:center;width:100%;max-width:320px}
+
+.breath-wrap{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.breath-ring{position:absolute;inset:-12px;border-radius:50%;border:1.5px solid rgba(239,68,68,.4);animation:ringPulse 2.4s infinite}
+@keyframes ringPulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+.breath-circle{
+    width:140px;height:140px;border-radius:50%;
+    border:2px solid var(--red);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle,rgba(239,68,68,.12) 0%,transparent 70%);
+    opacity:.5;transition:all 4s ease-in-out;
+    font-size:14px;font-weight:900;gap:2px;color:var(--txt)
+}
+.breath-circle .bc-icon{font-size:36px;line-height:1}
+.breath-circle .bc-count{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+.breath-in  {transform:scale(1.45);opacity:.85;background:radial-gradient(circle,rgba(59,130,246,.2) 0%,transparent 70%);border-color:var(--blue)}
+.breath-hold{transform:scale(1.45);opacity:.6;border-color:var(--purple)}
+.breath-out {transform:scale(1);opacity:.5;border-color:var(--green);background:radial-gradient(circle,rgba(16,185,129,.1) 0%,transparent 70%)}
+
+/* Step protocol (for states and post-breath) */
+#panic-step-screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:320px}
+.panic-step-big{
+    font-size:clamp(26px,7vw,38px);font-weight:900;
+    text-transform:uppercase;letter-spacing:1px;
+    line-height:1.15;margin-bottom:10px;color:var(--txt);
+    text-align:center;
+}
+.panic-step-hint{font-size:16px;color:#a1a1aa;margin-bottom:28px;line-height:1.7;max-width:260px}
+.panic-tap-hint{font-size:14px;color:#888890;letter-spacing:.15em;text-transform:uppercase;margin-top:16px}
+
+/* Done screen */
+#panic-done{display:none;flex-direction:column;align-items:center;width:100%;max-width:300px}
+.panic-done-label{font-size:14px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#94949a;margin-bottom:6px}
+.panic-done-big{font-size:44px;font-weight:900;color:var(--green);letter-spacing:2px;margin-bottom:4px}
+.panic-done-plus{font-size:56px;font-weight:900;color:var(--green);margin:10px 0 20px}
+
+#panic-msg{font-size:22px;font-weight:900;text-transform:uppercase;margin-bottom:6px;line-height:1.2;color:var(--red)}
+#panic-sub{font-size:16px;color:var(--sec);margin-bottom:26px;max-width:260px;line-height:1.7}
+.panic-btns{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px}
+
+/* ── HEADER ── */
+.hdr{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,10,12,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    padding:13px 16px;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center
+}
+.hdr-title{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:1px;font-size:17px}
+
+/* ── CONTAINER ── */
+.wrap{padding:14px;max-width:520px;margin:0 auto;padding-bottom:110px}
+
+/* ── QUOTE ── */
+.quote{border-left:3px solid var(--blue);padding:12px 14px;margin-bottom:18px;font-style:italic;font-size:16px;color:var(--sec);background:rgba(59,130,246,.04);border-radius:0 8px 8px 0}
+.quote-author{display:block;margin-top:5px;font-style:normal;font-weight:700;font-size:14px;color:#94949a}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#888890;margin:20px 0 8px;padding-bottom:7px;border-bottom:1px solid #3f3f46}
+
+/* ── SCENARIO CARDS ── */
+.sc-card{
+    background:var(--card);border:1px solid var(--border);border-left:4px solid var(--blue);
+    border-radius:14px;padding:15px;margin-bottom:10px;cursor:pointer;
+    transition:border-color .15s,transform .1s;display:flex;flex-direction:column;gap:5px
+}
+.sc-card:active{transform:scale(.99)}
+.sc-card.crit{border-left-color:var(--red);background:linear-gradient(135deg,rgba(239,68,68,.06) 0%,var(--card) 60%)}
+.sc-title{font-size:17px;font-weight:800;line-height:1.3}
+.sc-desc{font-size:15px;color:var(--sec);line-height:1.5}
+
+/* ── SCENARIO VIEW ── */
+.step-item{position:relative;padding-left:42px;margin-bottom:22px;animation:fadeUp .28s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.step-num{position:absolute;left:0;top:0;width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0}
+.step-num.warn{background:var(--red)}
+.step-t{font-size:17px;font-weight:700;margin-bottom:3px;line-height:1.3}
+.step-h{font-size:16px;color:var(--sec);font-style:italic;line-height:1.7}
+
+#timer-bar{background:rgba(245,158,11,.08);border:1px solid var(--orange);padding:9px 16px;border-radius:10px;display:flex;align-items:center;gap:10px;margin-bottom:18px;font-family:monospace;font-weight:900;color:var(--orange);font-size:20px}
+
+/* METRONOME */
+.metro-box{background:#1a1740;border:1px solid var(--purple);padding:13px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;margin:14px 0}
+.beat-dot{width:11px;height:11px;background:#333;border-radius:50%;transition:all .08s}
+.beat-on{background:var(--purple);box-shadow:0 0 14px var(--purple)}
+
+/* CALL BLOCK */
+.call-block{background:rgba(239,68,68,.06);border:1px solid var(--red);padding:14px;border-radius:12px;margin-top:22px}
+.call-ttl{color:var(--red);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+
+/* 112 MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8000;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.modal-box{background:#18181b;border:1px solid var(--border);border-radius:20px;padding:22px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;color:var(--txt)}
+.call-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.call-step-num{width:26px;height:26px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0}
+.call-step-body{font-size:16px;line-height:1.6}
+.call-step-label{font-weight:700;color:var(--txt)}
+.call-step-hint{color:var(--sec);font-size:15px}
+.call-tip{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);padding:10px 14px;border-radius:8px;font-size:15px;color:var(--sec);margin-top:4px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px}
+
+/* MIST */
+.mist-grid{display:grid;grid-template-columns:40px 1fr;gap:9px;align-items:center}
+.mist-lbl{font-weight:900;color:var(--blue);font-size:20px}
+.mist-inp{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--txt);padding:10px 12px;border-radius:8px;width:100%;font-family:var(--font);font-size:16px}
+.mist-inp:focus{outline:none;border-color:var(--blue)}
+.mist-inp::placeholder{color:#52525b}
+
+/* THEORY */
+details{background:var(--card);margin-bottom:9px;border-radius:12px;border:1px solid var(--border);overflow:hidden}
+summary{padding:14px 18px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:16px;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-size:20px;color:var(--blue);font-weight:300}
+details[open] summary::after{content:'−'}
+.th-body{padding:14px 18px;border-top:1px solid var(--border);font-size:17px;color:var(--sec);line-height:1.8}
+.th-body strong{color:var(--txt)}
+.th-body em{color:#94949a}
+.kit-item{display:flex;align-items:baseline;gap:8px;padding:4px 0;font-size:16px;border-bottom:1px solid #3f3f46}
+.kit-item:last-child{border:none}
+.kit-mark{color:var(--green);font-weight:900;flex-shrink:0}
+
+/* QUIZ */
+.quiz-opt{background:var(--card);border:1px solid var(--border);padding:13px 15px;margin:7px 0;border-radius:10px;cursor:pointer;font-size:16px;transition:all .12s}
+.quiz-opt.correct{background:rgba(16,185,129,.12);border-color:var(--green);color:var(--green);font-weight:700}
+.quiz-opt.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red)}
+
+/* ── COURSE ── */
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:border-color .15s}
+.mod-card:active{transform:scale(.99)}
+.mod-card.done{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.04)}
+.mod-num{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0;color:var(--sec)}
+.mod-card.done .mod-num{background:var(--green);color:#000}
+.mod-info{flex:1}
+.mod-card-title{font-size:17px;font-weight:700;line-height:1.3}
+.mod-card-sub{font-size:14px;color:var(--sec);margin-top:2px}
+.mod-status{font-size:18px;flex-shrink:0}
+.th-block{background:var(--card2);border-radius:12px;padding:16px;margin-bottom:12px}
+.th-block-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:10px}
+.th-block-body{font-size:17px;color:var(--sec);line-height:1.8}
+.th-block-body strong{color:var(--txt)}
+.th-block-body em{color:#94949a;font-size:15px}
+.th-block.warn-block{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)}
+.th-block.warn-block .th-block-title{color:var(--red)}
+.th-block.key-block{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2)}
+.th-block.key-block .th-block-title{color:var(--green)}
+.mod-quiz-q{margin-bottom:18px}
+.mod-quiz-label{font-size:17px;font-weight:700;margin-bottom:10px;line-height:1.4}
+.mod-quiz-opt{background:var(--card);border:1px solid var(--border);padding:12px 14px;margin:6px 0;border-radius:9px;cursor:pointer;font-size:16px;transition:all .12s}
+.mod-quiz-opt.correct{background:rgba(16,185,129,.12);border-color:var(--green);color:var(--green);font-weight:700}
+.mod-quiz-opt.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red)}
+.mod-quiz-opt.disabled{pointer-events:none}
+.quiz-result-bar{padding:12px 16px;border-radius:10px;font-weight:700;font-size:16px;text-align:center;margin-top:12px}
+.quiz-result-bar.pass{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.quiz-result-bar.fail{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+
+/* ── LESSON SYSTEM ── */
+.lesson-pager{display:flex;gap:5px;margin-bottom:20px;padding-top:4px}
+.lp-dot{height:3px;border-radius:2px;flex:1;background:var(--border);transition:background .35s}
+.lp-done{background:var(--green)}
+.lp-active{background:var(--blue)}
+.lesson-kicker{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--sec);margin-bottom:5px}
+.lesson-h{font-size:22px;font-weight:900;line-height:1.25;margin-bottom:20px}
+.task-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.35);border-radius:12px;padding:16px;margin:20px 0}
+.task-lbl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.task-txt{font-size:16px;color:var(--txt);line-height:1.75}
+.task-done-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:20px;font-size:14px;font-weight:700;color:var(--green);margin-top:12px}
+.lesson-foot{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.lesson-foot.solo{grid-template-columns:1fr}
+.lesson-list-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 15px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.lesson-list-item:active{transform:scale(.99)}
+.lesson-list-item.ll-done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+.ll-num{width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--sec);flex-shrink:0}
+.lesson-list-item.ll-done .ll-num{background:var(--green);color:#000}
+.ll-body{flex:1}
+.ll-title{font-size:17px;font-weight:700;line-height:1.3}
+.ll-status{font-size:14px;color:var(--sec);margin-top:2px}
+.test-unlock{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}
+.test-unlock-title{font-size:16px;font-weight:800;color:var(--blue);margin-bottom:3px}
+.test-unlock-sub{font-size:14px;color:var(--sec)}
+
+/* ── STICKY BACK BAR ── */
+.back-bar{
+    position:fixed;bottom:calc(58px + env(safe-area-inset-bottom));left:0;right:0;
+    z-index:999;display:flex;justify-content:flex-start;
+    padding:0 14px 8px;pointer-events:none;
+}
+.back-bar-btn{
+    pointer-events:all;
+    background:rgba(30,30,35,.95);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--border);
+    color:var(--txt);padding:10px 20px;border-radius:20px;
+    font-size:15px;font-weight:700;cursor:pointer;
+    font-family:var(--font);letter-spacing:.3px;
+    box-shadow:0 2px 12px rgba(0,0,0,.4);
+    transition:opacity .15s,transform .15s;
+}
+.back-bar-btn:active{transform:scale(.96);opacity:.85}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(20,20,22,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;justify-content:space-around;padding:10px 8px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border);z-index:1000}
+.nav-btn{background:none;border:none;color:#71717a;font-size:12px;font-weight:600;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;font-family:var(--font)}
+.nav-btn.on{color:var(--blue)}
+.nav-ico{font-size:22px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ PANIC OVERLAY ═══════════════════════ -->
+<div id="panic-overlay">
+
+    <!-- ЭКРАН 1: ВЫБОР СОСТОЯНИЯ -->
+    <div id="panic-select">
+        <div class="panic-select-label">Мозг завис. Нажми.</div>
+        <button class="panic-big-stop" onclick="startCombat('panic')">STOP</button>
+        <div class="panic-states-label">или выбери протокол</div>
+        <div class="panic-states">
+            <button class="panic-state-btn s-panic"  onclick="startCombat('panic')" title="Протокол СТОП (С-Т-О-П)">🛑 Паника<br><span style="font-size:9px;opacity:0.7">СТОП · С-Т-О-П</span></button>
+            <button class="panic-state-btn s-freeze" onclick="startCombat('freeze')" title="Протокол Разморозка (Ч-П-Н-Ш-Д)">🧊 Завис<br><span style="font-size:9px;opacity:0.7">Разморозка · Ч-П-Н-Ш-Д</span></button>
+            <button class="panic-state-btn s-anger"  onclick="startCombat('anger')" title="Протокол Дистанция (К-В-Ш-В)">🔥 Злость<br><span style="font-size:9px;opacity:0.7">Дистанция · К-В-Ш-В</span></button>
+            <button class="panic-state-btn s-over"   onclick="startCombat('over')" title="Протокол Пауза (С-Д-3-П)">⏸️ Перегруз<br><span style="font-size:9px;opacity:0.7">Пауза · С-Д-3-П</span></button>
+        </div>
+        <div class="panic-counter-row">Возвратов контроля: <span class="panic-counter-num" id="panic-counter">0</span></div>
+        <button class="panic-enter-link" onclick="unlockApp()">открыть приложение →</button>
+    </div>
+
+    <!-- ЭКРАН 2: ПРОТОКОЛ ПОШАГОВО (нажимаешь — следующий шаг) -->
+    <div id="panic-step-screen">
+        <div class="breath-wrap" id="panic-breath-wrap" style="display:none">
+            <div class="breath-ring"></div>
+            <div id="bv" class="breath-circle">
+                <span class="bc-icon">🫁</span>
+                <span id="bc-count" class="bc-count hidden">4</span>
+            </div>
+        </div>
+        <div class="panic-step-big" id="panic-step-txt"></div>
+        <div class="panic-step-hint" id="panic-step-hint"></div>
+        <button class="btn btn-ghost" id="panic-step-btn" onclick="combatNext()" style="width:100%;max-width:320px"></button>
+        <div class="panic-tap-hint">нажми когда готов</div>
+    </div>
+
+    <!-- ЭКРАН 3: ГОТОВО -->
+    <div id="panic-done">
+        <div class="panic-done-label">Контроль</div>
+        <div class="panic-done-big">ВОЗВРАЩЁН</div>
+        <div class="panic-done-plus">+1</div>
+        <button class="btn btn-green" onclick="backToSelect()" style="margin-bottom:12px">Готово</button>
+        <button class="btn btn-ghost btn-sm" onclick="unlockApp()">В приложение →</button>
+    </div>
+
+    <!-- СТАРЫЕ ЭЛЕМЕНТЫ (скрыты, нужны для совместимости) -->
+    <div id="panic-msg"    style="display:none"></div>
+    <div id="panic-sub"    style="display:none"></div>
+    <div class="panic-btns" style="display:none">
+        <button id="pb-start"  class="btn btn-red   hidden"></button>
+        <button id="pb-s1"     class="btn btn-ghost hidden"></button>
+        <button id="pb-s2"     class="btn btn-ghost hidden"></button>
+        <button id="pb-ready"  class="btn btn-green hidden"></button>
+    </div>
+</div>
+
+<!-- ═══════════════════════ APP ROOT ═══════════════════════ -->
+<div id="app-root" class="hidden">
+
+<header class="hdr">
+    <div class="hdr-title">🛡️ AID COMMANDER</div>
+    <button class="btn btn-red btn-sm" onclick="showPanic()">⚠️ ПАНИКА</button>
+</header>
+
+<!-- ─── VIEW: HOME ─── -->
+<div id="v-home" class="wrap view">
+    <div class="quote">
+        «Под давлением ты не поднимаешься до уровня ожиданий — ты падаешь до уровня подготовки.»
+        <span class="quote-author">— Архилох / Девиз спецназа США</span>
+    </div>
+    <div id="home-content"></div>
+</div>
+
+<!-- ─── VIEW: SCENARIO ─── -->
+<div id="v-scene" class="wrap view hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <button class="btn btn-ghost btn-sm" onclick="goHome()">← НАЗАД</button>
+        <div id="timer-bar" class="hidden">⏱ 00:00</div>
+    </div>
+    <h2 id="sc-title" style="margin-bottom:22px;font-size:19px"></h2>
+    <div id="sc-steps"></div>
+    <div id="tool-metro" class="metro-box hidden">
+        <div>
+            <div style="font-weight:700;font-size:12px">МЕТРОНОМ СЛР</div>
+            <div style="font-size:11px;color:var(--sec)">110 BPM · Stayin' Alive</div>
+        </div>
+        <div style="display:flex;gap:7px">
+            <div class="beat-dot"></div><div class="beat-dot"></div>
+            <div class="beat-dot"></div><div class="beat-dot"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleMetro()" id="btn-metro">СТАРТ</button>
+    </div>
+    <div class="call-block">
+        <div class="call-ttl">Вызов экстренных служб</div>
+        <button class="btn btn-red" style="margin-bottom:10px" onclick="show112()">📞 Позвонить 112</button>
+        <button class="btn btn-ghost" onclick="show112modal()">💬 Что говорить диспетчеру?</button>
+    </div>
+</div>
+
+<!-- ─── VIEW: MIST ─── -->
+<div id="v-mist" class="wrap view hidden">
+    <h2 style="margin-bottom:5px">Отчёт MIST</h2>
+    <p style="font-size:12px;color:var(--sec);margin-bottom:18px">Для передачи раненого эвакуационной группе (TCCC)</p>
+    <div class="card">
+        <div class="mist-grid">
+            <div class="mist-lbl">M</div><input id="mm" class="mist-inp" placeholder="Механизм (взрыв, пуля, ДТП…)">
+            <div class="mist-lbl">I</div><input id="mi" class="mist-inp" placeholder="Травмы (нога, грудь, голова…)">
+            <div class="mist-lbl">S</div><input id="ms" class="mist-inp" placeholder="Симптомы (пульс, сознание…)">
+            <div class="mist-lbl">T</div><input id="mt" class="mist-inp" placeholder="Лечение (жгут 14:20, тампонада…)">
+        </div>
+    </div>
+    <button class="btn btn-green" style="margin-bottom:14px" onclick="copyMist()" id="btn-copy">📋 КОПИРОВАТЬ ТЕКСТ</button>
+    <div class="card" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.04)">
+        <div style="font-weight:800;font-size:11px;margin-bottom:10px;color:var(--blue);text-transform:uppercase;letter-spacing:1px">Расшифровка</div>
+        <div style="font-size:13px;color:var(--sec);line-height:1.9">
+            <strong>M</strong>echanism — механизм травмы<br>
+            <strong>I</strong>njury — найденные повреждения<br>
+            <strong>S</strong>igns — жизненные показатели<br>
+            <strong>T</strong>reatment — оказанная помощь
+        </div>
+    </div>
+</div>
+
+<!-- ─── VIEW: COURSE ─── -->
+<div id="v-theory" class="wrap view hidden">
+
+    <!-- SUB: MODULE LIST -->
+    <div id="course-list">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <h2 style="font-size:20px">📖 Курс</h2>
+            <button class="btn btn-ghost btn-sm" onclick="resetProgress()" style="color:var(--sec);font-size:10px">СБРОС</button>
+        </div>
+        <div style="margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:12px;color:var(--sec)" id="prog-label">0 из 8 пройдено</span>
+                <span style="font-size:12px;color:var(--green);font-weight:700" id="prog-pct">0%</span>
+            </div>
+            <div style="background:#1e1e22;border-radius:4px;height:5px">
+                <div id="prog-fill" style="background:var(--green);border-radius:4px;height:5px;width:0%;transition:width .5s"></div>
+            </div>
+        </div>
+        <div id="mod-list"></div>
+    </div>
+
+    <!-- SUB: MODULE DETAIL -->
+    <div id="course-detail" class="hidden">
+        <button class="btn btn-ghost btn-sm" onclick="courseBack()" id="btn-back-detail" style="margin-bottom:18px">← К СПИСКУ</button>
+
+        <!-- LESSON LIST -->
+        <div id="cl-lessons">
+            <div id="cl-mod-num" class="lesson-kicker"></div>
+            <h2 id="cl-mod-title" style="font-size:19px;margin-bottom:5px;line-height:1.2"></h2>
+            <p id="cl-mod-sub" style="font-size:12px;color:var(--sec);margin-bottom:20px;line-height:1.5"></p>
+            <div id="cl-lesson-list"></div>
+            <div id="cl-test-unlock" class="hidden">
+                <div class="test-unlock">
+                    <div class="test-unlock-title">🎯 Все уроки пройдены</div>
+                    <div class="test-unlock-sub">Пройди тест для завершения модуля</div>
+                </div>
+                <button class="btn btn-blue" onclick="openModTest()">ПРОЙТИ ТЕСТ МОДУЛЯ</button>
+            </div>
+            <div id="cl-mod-done-msg" class="hidden" style="text-align:center;padding:16px;color:var(--green);font-weight:800;font-size:14px;border:1px solid rgba(16,185,129,.3);border-radius:12px;background:rgba(16,185,129,.06)">✅ Модуль завершён</div>
+        </div>
+
+        <!-- LESSON READER -->
+        <div id="cl-reader" class="hidden">
+            <div id="cl-pager" class="lesson-pager"></div>
+            <div id="cl-lesson-kicker" class="lesson-kicker"></div>
+            <div id="cl-lesson-title" class="lesson-h"></div>
+            <div id="cl-lesson-body"></div>
+            <div id="cl-task-box" class="task-box hidden">
+                <div class="task-lbl">📋 Практическое задание</div>
+                <div id="cl-task-txt" class="task-txt"></div>
+                <div id="cl-task-badge" class="task-done-badge hidden">✓ Задание отмечено выполненным</div>
+                <button id="btn-task-check" class="btn btn-ghost" style="margin-top:12px;font-size:13px" onclick="markTaskDone()">☐ Отметить как выполненное</button>
+            </div>
+            <div id="cl-lesson-foot" class="lesson-foot">
+                <button id="btn-lesson-prev" class="btn btn-ghost" onclick="navLesson(-1)">← Предыдущий</button>
+                <button id="btn-lesson-next" class="btn btn-blue" onclick="navLesson(1)">Следующий →</button>
+            </div>
+            <button id="btn-lesson-done" class="btn btn-green hidden" onclick="completeLesson()" style="margin-top:10px">✓ ЗАВЕРШИТЬ УРОК</button>
+        </div>
+
+        <!-- MODULE TEST -->
+        <div id="cl-test" class="hidden">
+            <div id="cl-test-kicker" class="lesson-kicker"></div>
+            <h2 id="cl-test-title" style="font-size:18px;margin-bottom:20px;line-height:1.3"></h2>
+            <div id="cl-test-questions"></div>
+            <div id="cl-test-result" class="hidden" style="margin-top:12px"></div>
+            <button id="btn-test-retry" class="btn btn-ghost hidden" onclick="openModTest()" style="margin-top:12px">↻ ПОПРОБОВАТЬ ЕЩЁ РАЗ</button>
+            <button id="btn-test-pass" class="btn btn-green hidden" onclick="markModDone()" style="margin-top:12px">✅ ЗАВЕРШИТЬ МОДУЛЬ</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── VIEW: QUIZ ─── -->
+<div id="v-quiz" class="wrap view hidden">
+    <h2 style="margin-bottom:5px">Тренажёр</h2>
+    <p style="font-size:12px;color:var(--sec);margin-bottom:18px">Проверь уровень подготовки. Вопрос случайный.</p>
+    <div class="card">
+        <button class="btn btn-blue" onclick="startQuiz()" id="btn-quiz-start">СТАРТ ТЕСТА</button>
+        <div id="quiz-body" class="hidden" style="margin-top:18px">
+            <h3 id="q-txt" style="margin-bottom:18px;line-height:1.4;font-size:16px"></h3>
+            <div id="q-opts"></div>
+            <p id="q-fb" style="margin-top:14px;font-weight:800;min-height:22px;font-size:15px"></p>
+            <button id="q-next" class="btn btn-ghost hidden" onclick="startQuiz()" style="margin-top:10px">СЛЕДУЮЩИЙ ВОПРОС</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav class="nav">
+    <button class="nav-btn on" id="n-home"   onclick="goNav('v-home','n-home')">   <span class="nav-ico">🚑</span><span>ГЛАВНАЯ</span></button>
+    <button class="nav-btn"    id="n-mist"   onclick="goNav('v-mist','n-mist')">   <span class="nav-ico">📋</span><span>ОТЧЁТ</span></button>
+    <button class="nav-btn"    id="n-theory" onclick="goNav('v-theory','n-theory')"><span class="nav-ico">📚</span><span>ТЕОРИЯ</span></button>
+    <button class="nav-btn"    id="n-quiz"   onclick="goNav('v-quiz','n-quiz')">   <span class="nav-ico">🎯</span><span>ТРЕНАЖЁР</span></button>
+</nav>
+
+<!-- ─── 112 MODAL ─── -->
+<div id="modal-112" class="modal-overlay hidden" onclick="close112(event)">
+    <div class="modal-box">
+        <div class="modal-title">📞 Как говорить с диспетчером</div>
+        <div class="call-step"><div class="call-step-num">1</div><div class="call-step-body"><div class="call-step-label">КТО звонит</div><div class="call-step-hint">Назовите имя</div></div></div>
+        <div class="call-step"><div class="call-step-num">2</div><div class="call-step-body"><div class="call-step-label">ЧТО случилось</div><div class="call-step-hint">Кратко: «мужчина без сознания, не дышит»</div></div></div>
+        <div class="call-step"><div class="call-step-num">3</div><div class="call-step-body"><div class="call-step-label">ГДЕ</div><div class="call-step-hint">Адрес точно. Не знаете — ориентиры.</div></div></div>
+        <div class="call-step"><div class="call-step-num">4</div><div class="call-step-body"><div class="call-step-label">СКОЛЬКО пострадавших</div><div class="call-step-hint">Число и состояние</div></div></div>
+        <div class="call-step"><div class="call-step-num">5</div><div class="call-step-body"><div class="call-step-label">ЧТО УЖЕ СДЕЛАНО</div><div class="call-step-hint">«Жгут наложен в 14:20, CPR идёт»</div></div></div>
+        <div class="call-step"><div class="call-step-num">6</div><div class="call-step-body"><div class="call-step-label">НЕ ВЕШАЙ ТРУБКУ</div><div class="call-step-hint">Диспетчер руководит вашими действиями</div></div></div>
+        <div class="call-tip">💡 Включи громкую связь — работай и слушай одновременно</div>
+        <button class="btn btn-ghost" style="margin-top:16px" onclick="close112()">ЗАКРЫТЬ</button>
+    </div>
+</div>
+
+<!-- ─── STICKY BACK BAR ─── -->
+<div id="back-bar" class="back-bar hidden">
+    <button class="back-bar-btn" id="back-bar-btn" onclick="stickyBack()">← Назад</button>
+</div>
+
+</div><!-- /app-root -->
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA — SCENARIOS
+// ══════════════════════════════════════════════════════
+const S = {
+
+// ── КРИТИЧЕСКИЕ ──
+abcde:{title:"🔍 Оценка пострадавшего",badge:"ABCDE · СБЕРУ",crit:true,timer:false,metro:false,desc:"Универсальный алгоритм первичной оценки любой ЧС.",steps:[
+    {t:"СБЕРУ — БЕЗОПАСНОСТЬ",h:"Сцена безопасна? Биологическая угроза (перчатки!)? Ещё жертвы? Ресурсы? Угрозы продолжаются?"},
+    {t:"РЕАКЦИЯ",h:"Потряси за плечи, громко окликни. Нет реакции → зови помощь, поручи конкретному человеку звонок 112."},
+    {t:"A — ДЫХАТЕЛЬНЫЕ ПУТИ",h:"Без сознания: запрокинь голову + подними подбородок. Подозрение на травму шеи → выдвинь челюсть без движения шеи."},
+    {t:"B — ДЫХАНИЕ",h:"Смотри-Слушай-Чувствуй 10 сек. Агональные вздохи = НЕ ДЫШИТ → CPR. Одностороннее движение груди = пневмоторакс."},
+    {t:"C — КРОВООБРАЩЕНИЕ",h:"Жизнеугрожающее кровотечение? → ОСТАНОВИТЬ ПЕРВЫМ. Нет пульса → CPR. Шок (бледный, холодный, слабый пульс) → горизонтально, ноги вверх."},
+    {t:"D — СОЗНАНИЕ (AVPU)",h:"A — в сознании. V — реагирует на голос. P — реагирует на боль. U — не реагирует ни на что. Зрачки: разные = критично."},
+    {t:"E — ПОЛНЫЙ ОСМОТР",h:"Разрежь одежду, осмотри всё тело включая спину и пах. После осмотра — НЕМЕДЛЕННО накрой. Гипотермия ухудшает шок."},
+]},
+
+bleeding:{title:"🔴 Массивное кровотечение",badge:"MARCH · TCCC",crit:true,timer:true,metro:false,desc:"Смерть от артериального кровотечения — за 3–5 минут. Приоритет №1.",steps:[
+    {t:"БЕЗОПАСНОСТЬ",h:"Угроза для тебя? Надень перчатки или используй пакет. Мёртвый спасатель не поможет."},
+    {t:"ЖГУТ (КОНЕЧНОСТЬ)",h:"На плечо или бедро — 5–7 см выше раны. Затягивай до ПОЛНОЙ остановки. Должно быть очень больно = правильно."},
+    {t:"ТАМПОНАДА (ПАХ / ПОДМЫШКА)",h:"Затолкай марлю/ткань ГЛУБОКО в рану к источнику. Дави 3 мин (гемостатик) или 10 мин (обычная ткань)."},
+    {t:"ШЕЯ — ДАВИТЬ СБОКУ",h:"При ранении шеи давить на БОКОВУЮ поверхность к позвоночнику. НЕ давить спереди — трахея!"},
+    {t:"ЗАПИШИ ВРЕМЯ",h:"Время наложения жгута на лбу маркером или на жгуте. Включи таймер в приложении."},
+    {t:"ПРИ ШОКЕ",h:"Бледная холодная кожа, слабый пульс → горизонтально, ноги 15–30 см вверх, согреть. НЕ давать пить."},
+    {t:"ЗВОНОК 112",h:"«Массивное кровотечение, жгут на [место] в [время]». Не вешай трубку первым."},
+]},
+
+cpr:{title:"⚪ СЛР / Не дышит",badge:"BLS · ERC 2025",crit:true,timer:false,metro:true,desc:"Без сознания, нет дыхания. Каждая секунда промедления — потеря нейронов.",steps:[
+    {t:"БЕЗОПАСНОСТЬ",h:"Осмотрись — огонь, провода, агрессия?"},
+    {t:"ПРОВЕРКА",h:"Потряси за плечи: «ТЫ МЕНЯ СЛЫШИШЬ?»"},
+    {t:"ЗОВИ ПОМОЩЬ",h:"«ТЫ в синей куртке — звони 112! ТЫ — найди дефибриллятор (AED)!»"},
+    {t:"ДЫХАНИЕ 10 СЕК",h:"Запрокинь голову. Смотри–Слушай–Чувствуй. Агональные вздохи (как у рыбы) = НЕ ДЫШИТ."},
+    {t:"30 КОМПРЕССИЙ",h:"Центр грудины. Глубина 5–6 см. Темп 100–120. Распрямляй руки полностью, работай весом тела."},
+    {t:"2 ВДОХА",h:"Только с маской. Без маски — компрессии без остановки. Меняйся каждые 2 мин если есть кто-то ещё."},
+    {t:"ЦИКЛ 30:2",h:"Не останавливаться до AED или врачей."},
+    {t:"РЕБЁНОК — ОТЛИЧИЯ",h:"Сначала 5 спасательных вдохов, потом CPR. Глубина ~5 см. Соотношение 30:2 (один) или 15:2 (двое). AED в детском режиме."},
+    {t:"AED — ИНСТРУКЦИЯ",h:"Включил → приклеил электроды → слушай голосовые команды → НЕ касайся при анализе → кнопка разряда."},
+]},
+
+triage:{title:"🚨 Несколько пострадавших",badge:"ТРИАЖ · START",crit:true,timer:false,metro:false,desc:"ДТП, взрыв, катастрофа. Наибольшая помощь наибольшему числу людей.",steps:[
+    {t:"ВЫЗОВИ 112 СРАЗУ",h:"Сообщи число пострадавших. 30–60 секунд на каждого максимум. Не трать всё на одного."},
+    {t:"🔴 КРАСНЫЙ — НЕМЕДЛЕННО",h:"Не дышит без открытия путей. ЧД > 30/мин. Нет пульса на запястье. Не выполняет команды. Жизнеугрожающее кровотечение."},
+    {t:"🟡 ЖЁЛТЫЙ — ОТСРОЧЕННО",h:"В сознании, дышит нормально, есть пульс. Может подождать часы. Не требует немедленного вмешательства."},
+    {t:"🟢 ЗЕЛЁНЫЙ — САМОСТОЯТЕЛЬНО",h:"Ходит, незначительные повреждения. Скажи: «Отойди туда, помощь придёт». Могут помочь другим."},
+    {t:"⚫ ЧЁРНЫЙ — БЕЗНАДЁЖНЫЙ",h:"Не дышит даже после открытия путей. Несовместимые с жизнью повреждения. При ограниченных ресурсах — ресурсы другим."},
+    {t:"СТАБИЛИЗИРУЙ КРАСНЫХ",h:"Жгут на кровотечение, открой дыхательные пути. Минимум — и к следующему. Ты не врач — ты покупаешь время."},
+]},
+
+// ── КРОВОТЕЧЕНИЯ ──
+nose_bleed:{title:"🩸 Носовое кровотечение",badge:"ЧАСТАЯ СИТУАЦИЯ",crit:false,timer:false,metro:false,desc:"Встречается часто — важно не делать ошибки.",steps:[
+    {t:"НАКЛОН ВПЕРЁД",h:"НЕ НАЗАД — кровь попадёт в горло, вызывает тошноту и рвоту."},
+    {t:"ЗАЖМИ КРЫЛЬЯ НОСА",h:"Мягкую часть носа (не переносицу!). Дышать только ртом."},
+    {t:"ДЕРЖИ 10–15 МИН",h:"Непрерывно, без проверок. Каждая проверка нарушает тромб."},
+    {t:"ХОЛОД",h:"Холодный компресс на переносицу — сужает сосуды."},
+    {t:"НЕ ДЕЛАЙ",h:"НЕ запрокидывай голову. НЕ тампонируй глубоко. НЕ глотай кровь."},
+    {t:"КОГДА 112",h:"Не останавливается 20 мин. Была травма головы. Кровь из уха (это ликвор — перелом!)."},
+]},
+
+internal_bleed:{title:"🫀 Внутреннее кровотечение",badge:"ТОЛЬКО ХИРУРГ",crit:false,timer:false,metro:false,desc:"Нет видимой крови, но шок нарастает. Только операция спасает.",steps:[
+    {t:"ПРИЗНАКИ",h:"Сильная боль в животе/груди/тазу. Вздутие живота. Шок без видимого кровотечения."},
+    {t:"ПРИЗНАКИ ШОКА",h:"Бледная холодная кожа, частый слабый пульс, тревога, жажда, спутанность."},
+    {t:"НЕ ДАВИТЬ НА ЖИВОТ",h:"Никакой пальпации и надавливания — усиливает кровотечение."},
+    {t:"ПОЛОЖЕНИЕ",h:"На спине, ноги согнуты в коленях — снижает боль от натяжения брюшины."},
+    {t:"НЕ ЕСТЬ И НЕ ПИТЬ",h:"Возможна экстренная операция. Даже вода — нельзя."},
+    {t:"ТОЛЬКО 112",h:"Внутреннее кровотечение остановит только хирург. Контролируй состояние в ожидании."},
+]},
+
+// ── ДЫХАНИЕ И УДУШЬЕ ──
+choking:{title:"🤢 Удушье — взрослый",badge:"ABC",crit:false,timer:false,metro:false,desc:"Подавился, не может говорить/дышать. 5 ударов + 5 толчков.",steps:[
+    {t:"ОЦЕНКА",h:"Кашляет эффективно — НЕ мешай, поощряй кашель. Молчит / синеет / хватается за горло — действуй немедленно."},
+    {t:"5 УДАРОВ ПО СПИНЕ",h:"Наклони вперёд, 5 сильных ударов ребром ладони между лопатками."},
+    {t:"5 ТОЛЧКОВ ГЕЙМЛИХА",h:"Встань сзади, кулак выше пупка ниже грудины, 5 резких толчков вверх-на-себя."},
+    {t:"ЧЕРЕДУЙ 5+5",h:"До успеха или потери сознания. Потерял сознание → пол, CPR, смотри в рот перед каждым вдохом."},
+    {t:"НЕ ДЕЛАЙ",h:"НЕ делай слепых поисков пальцем в горле — только если видишь предмет."},
+    {t:"ГЕЙМЛИХ НА СЕБЕ",h:"Кулак на живот + вторая рука резко вверх-внутрь. Или: прижмись животом к углу стола/спинке стула."},
+    {t:"БЕРЕМЕННЫЕ / ТУЧНЫЕ",h:"Толчки в грудь: кулак на нижнюю треть грудины, резко назад — не вверх."},
+]},
+
+choking_infant:{title:"👶 Удушье — младенец",badge:"ДО 1 ГОДА",crit:true,timer:false,metro:false,desc:"Алгоритм кардинально отличается от взрослого. Геймлих запрещён!",steps:[
+    {t:"ГЕЙМЛИХ НЕЛЬЗЯ!",h:"Абдоминальные толчки младенцам до 1 года ЗАПРЕЩЕНЫ — риск разрыва внутренних органов."},
+    {t:"5 УДАРОВ ПО СПИНЕ",h:"Держи лицом вниз на предплечье, голова НИЖЕ тела. Поддерживай голову. 5 ударов основанием ладони между лопатками."},
+    {t:"5 ТОЛЧКОВ В ГРУДЬ",h:"Переверни лицом вверх на предплечье. 2 пальца на грудину (на 1 палец ниже сосков). 5 резких толчков вниз (~4 см)."},
+    {t:"ЧЕРЕДУЙ 5+5",h:"Удары по спине + толчки в грудь — до успеха или потери сознания."},
+    {t:"ПОТЕРЯЛ СОЗНАНИЕ",h:"CPR немедленно. Перед каждым вдохом — смотри в рот, убирай видимый предмет. Слепой поиск — нельзя."},
+    {t:"ЗВОНОК 112",h:"Поручи кому-то сразу — сам продолжай. Скажи возраст ребёнка."},
+]},
+
+chest:{title:"🫁 Ранение груди",badge:"R in MARCH",crit:false,timer:false,metro:false,desc:"Пневмоторакс, свистящая рана. Окклюзионная повязка — ключевой шаг.",steps:[
+    {t:"ОСМОТР",h:"Найди вход И выход раны. Осмотри спину тоже! Слышишь свист при дыхании?"},
+    {t:"ОККЛЮЗИЯ",h:"Закрой дыру плёнкой/пакетом. Приклей с 3–4 сторон, оставь нижний угол свободным — клапан для воздуха."},
+    {t:"ПОЛОЖЕНИЕ",h:"Посади или положи на РАНЕНЫЙ бок — здоровое лёгкое работает лучше."},
+    {t:"НАПРЯЖЁННЫЙ ПНЕВМОТОРАКС",h:"Резко хуже, вздутые вены шеи, смещение трахеи, нарастающая одышка → 112 СРОЧНО. Отлепи край повязки — выпусти воздух."},
+]},
+
+airway_swelling:{title:"😮 Нарастающий отёк горла",badge:"АНАФИЛАКСИЯ · ОЖОГ",crit:true,timer:false,metro:false,desc:"Стридор нарастает. Минуты решают всё.",steps:[
+    {t:"ПРИЗНАКИ",h:"Стридор (свист на вдохе) нарастает. Голос хриплый или «квакающий». Затруднение глотания, слюнотечение."},
+    {t:"112 НЕМЕДЛЕННО",h:"Это неотложная ситуация. Не жди улучшения. Звони сразу."},
+    {t:"ПОЛОЖЕНИЕ ПОЛУСИДЯ",h:"НЕ укладывай горизонтально. Полусидя легче дышать при отёке."},
+    {t:"АДРЕНАЛИН (анафилаксия)",h:"EpiPen: наружная поверхность бедра через одежду, держать 10 сек. Только адреналин останавливает реакцию."},
+    {t:"ГОТОВЬСЯ К CPR",h:"Потерял сознание и перестал дышать → CPR немедленно."},
+]},
+
+// ── ТРАВМЫ ──
+head:{title:"🧠 Травма головы (ЧМТ)",badge:"TBI",crit:false,timer:false,metro:false,desc:"Контузия, проникающее ранение. Следи за признаками ухудшения.",steps:[
+    {t:"ЗРАЧКИ",h:"Разные по размеру или не реагируют на свет? КРИТИЧНО → 112 немедленно."},
+    {t:"СОЗНАНИЕ AVPU",h:"A — норма. V — реагирует на голос. P — только на боль (щипок). U — нет реакции."},
+    {t:"⚠️ СВЕТЛЫЙ ПРОМЕЖУТОК",h:"Потерял сознание → пришёл в себя → снова потерял. Это эпидуральная гематома. СРОЧНО в нейрохирургию!"},
+    {t:"КРОВЬ ИЗ УХА",h:"НЕ ТАМПОНИРУЙ — это может быть ликвор (перелом основания черепа). Прикрой марлей без давления."},
+    {t:"НЕ ДЕЛАЙ",h:"НЕ давить на вдавленные переломы черепа. НЕ давать алкоголь. НЕ оставлять одного."},
+    {t:"КОГДА 112",h:"Любая потеря сознания. Повторная рвота. «Самая сильная головная боль в жизни». Судороги."},
+]},
+
+fractures:{title:"🦴 Переломы",badge:"ИММОБИЛИЗАЦИЯ",crit:false,timer:false,metro:false,desc:"Не вправляй. Зафиксируй. Проверь пульс.",steps:[
+    {t:"НЕ ВПРАВЛЯЙ",h:"Никогда не вправляй перелом самостоятельно. Зафиксируй в том положении, в котором нашёл."},
+    {t:"ОТКРЫТЫЙ ПЕРЕЛОМ",h:"Кость видна → стерильная повязка. НЕ вправлять, НЕ промывать."},
+    {t:"ШИНА",h:"Захватывает сустав ВЫШЕ и НИЖЕ перелома. Доска, ветка, зонт, прибинтовать к здоровой ноге."},
+    {t:"ПРОВЕРЬ ПУЛЬС",h:"До и после фиксации. Нет пульса ниже перелома → сосуд пережат → ослабь шину."},
+    {t:"ПЕРЕЛОМ БЕДРА",h:"Кровопотеря до 1.5 литра! Следи за признаками шока. Нога укорочена, повёрнута кнаружи."},
+    {t:"ПЕРЕЛОМ ТАЗА",h:"Кровопотеря до 4 литров! НЕ СДАВЛИВАЙ таз руками для проверки — усиливаешь кровотечение. Ноги вместе, колени согнуть."},
+]},
+
+spine:{title:"🦴 Травма позвоночника",badge:"НЕ ДВИГАТЬ",crit:false,timer:false,metro:false,desc:"Одно лишнее движение может привести к параличу.",steps:[
+    {t:"КОГДА ПОДОЗРЕВАТЬ",h:"ДТП, падение с высоты, ныряние на мелководье, прямой удар по спине, «хлыст», потеря сознания при травме."},
+    {t:"ПРИЗНАКИ ПОВРЕЖДЕНИЯ",h:"Онемение/покалывание в конечностях. Слабость или паралич. Потеря контроля над мочевым пузырём."},
+    {t:"НЕ ДВИГАТЬ!",h:"Неправильное движение превращает частичный разрыв спинного мозга в полный. Это необратимо."},
+    {t:"ДЕРЖИ ГОЛОВУ",h:"Обхвати голову с боков обеими ладонями. Нейтральная позиция (взгляд прямо). Лёгкое вытяжение вверх. Держи до скорой."},
+    {t:"КОГДА МОЖНО ДВИГАТЬ",h:"Только при непосредственной угрозе жизни (горящая машина). Тяни вдоль оси за подмышки — голова и тело как одно целое."},
+]},
+
+abdomen:{title:"🫀 Травма живота",badge:"ТОЛЬКО ХИРУРГ",crit:false,timer:false,metro:false,desc:"Не вправлять органы, не извлекать предметы. Только 112.",steps:[
+    {t:"ПРИЗНАКИ",h:"Нарастающая боль. Живот твёрдый «как доска». Симптомы шока. Выпадение органов."},
+    {t:"НЕ ВПРАВЛЯТЬ ОРГАНЫ",h:"Если органы выпали — накрой влажной стерильной повязкой. НЕ вправляй!"},
+    {t:"ИНОРОДНЫЙ ПРЕДМЕТ",h:"НЕ ИЗВЛЕКАЙ — он держит сосуды. Зафиксируй валиком из бинта вокруг предмета."},
+    {t:"ПОЛОЖЕНИЕ",h:"На спине, ноги согнуты в коленях — снижает боль."},
+    {t:"НЕ ЕСТЬ И НЕ ПИТЬ",h:"Возможна экстренная операция под наркозом. Даже вода запрещена."},
+    {t:"ТОЛЬКО 112",h:"Только хирург. Контролируй шок в ожидании."},
+]},
+
+// ── МЕДИЦИНСКИЕ ЧС ──
+stroke:{title:"💔 Инсульт / Инфаркт",badge:"BE-FAST · ВРЕМЯ = МОЗГ",crit:false,timer:false,metro:false,desc:"Каждую минуту инсульта гибнет ~2 млн нейронов. Время записать!",steps:[
+    {t:"BE-FAST (ИНСУЛЬТ)",h:"Balance — равновесие. Eyes — зрение. Face — перекос лица. Arms — слабость руки. Speech — речь. Time — запомни время симптомов!"},
+    {t:"ВРЕМЯ СИМПТОМОВ — КРИТИЧНО",h:"Запомни точное время первых симптомов. Тромболизис работает только в первые 4.5 часа."},
+    {t:"ИНФАРКТ — ПРИЗНАКИ",h:"Боль/давление за грудиной, иррадиация в руку/челюсть, холодный пот. У женщин/пожилых/диабетиков: только слабость или одышка без боли!"},
+    {t:"ПОЛОЖЕНИЕ",h:"Инсульт: голова 30° выше (НЕ горизонтально — повышает внутричерепное давление). Инфаркт: полулёжа как удобнее."},
+    {t:"АСПИРИН — ОСТОРОЖНО",h:"При инфаркте: 150–325 мг разжевать (если нет аллергии). При инсульте: аспирин НЕЛЬЗЯ до КТ — может быть геморрагический!"},
+    {t:"НИТРОГЛИЦЕРИН",h:"Только если есть у пациента. НЕ давать если АД < 90/60, пульс < 50, принимал Виагру/аналоги."},
+    {t:"НЕ ДЕЛАТЬ",h:"Инсульт: не горизонтально, не аспирин, не лекарства от давления самостоятельно. Не давать есть/пить."},
+]},
+
+anaphylaxis:{title:"💉 Анафилаксия",badge:"АДРЕНАЛИН ПЕРВЫМ",crit:true,timer:false,metro:false,desc:"Тяжёлая аллергическая реакция. Развивается за секунды. Адреналин — главное.",steps:[
+    {t:"ПРИЗНАКИ",h:"2+ системы: кожа (крапивница, отёк лица) + горло (стридор, осиплость) + дыхание (хрипы) + давление (падает). Укус, еда, лекарство."},
+    {t:"АДРЕНАЛИН — ПЕРВЫМ",h:"EpiPen: наружная поверхность бедра, через одежду, держать 10 сек. Взрослый 0.3 мг, ребёнок до 30 кг — 0.15 мг."},
+    {t:"ЗВОНОК 112",h:"Сразу после адреналина. Анафилаксия требует наблюдения — возможен повторный приступ через часы."},
+    {t:"ПОЛОЖЕНИЕ",h:"Одышка → полусидя. Низкое давление → лёжа, ноги вверх. Без сознания + дыхание → СБП."},
+    {t:"ПОВТОРНЫЙ АДРЕНАЛИН",h:"Нет улучшения через 5–15 мин → повторить EpiPen. Можно до 2–3 раз."},
+    {t:"АНТИГИСТАМИННЫЕ — ВСПОМОГАТЕЛЬНО",h:"Димедрол, лоратадин — дополнение, НЕ замена адреналину! Люди умирают от анафилаксии, отказавшись от адреналина."},
+]},
+
+seizures:{title:"⚡ Судороги",badge:"ЭПИЛЕПСИЯ",crit:false,timer:false,metro:false,desc:"Важно знать чего НЕ делать — большинство действий навредят.",steps:[
+    {t:"ЗАСЕКИ ВРЕМЯ",h:"Время начала. Более 5 минут непрерывных судорог → 112 немедленно."},
+    {t:"УБЕРИ ОПАСНОЕ",h:"Острые и твёрдые предметы вокруг. Подложи мягкое под голову."},
+    {t:"НЕ УДЕРЖИВАЙ",h:"НЕ удерживай силой — переломы и вывихи у пострадавшего и у тебя."},
+    {t:"ЯЗЫК НЕ ЗАПАДАЕТ!",h:"Вставлять ничего в рот — НЕЛЬЗЯ. Риск перелома зубов и пальцев. Язык при судорогах не западает — это миф!"},
+    {t:"ПЕРЕВЕРНИ НА БОК",h:"При рвоте. Расстегни воротник. Жди окончания."},
+    {t:"ПОСЛЕ СУДОРОГ",h:"Спутанность 5–30 мин — норма (постиктальный период). СБП. Успокой голосом. Не оставляй одного."},
+    {t:"КОГДА 112",h:"Более 5 мин. Повторный приступ. Не приходит в сознание 10 мин. Первый приступ. Беременность. Травма во время приступа."},
+]},
+
+heat_stroke:{title:"🌡️ Тепловой удар",badge:"ОХЛАЖДЕНИЕ СРОЧНО",crit:false,timer:false,metro:false,desc:"Температура > 40°C, горячая сухая кожа. Каждая минута — повреждение мозга.",steps:[
+    {t:"ТЕПЛОВОЕ ИСТОЩЕНИЕ (средняя)",h:"Слабость, бледность, холодная липкая кожа, тахикардия, температура < 40°C → Прохладное место, горизонтально, пить воду."},
+    {t:"ТЕПЛОВОЙ УДАР (тяжёлая)",h:"Температура > 40°C. Горячая СУХАЯ кожа (пот прекратился). Спутанность. Потеря сознания → 112 НЕМЕДЛЕННО."},
+    {t:"АКТИВНОЕ ОХЛАЖДЕНИЕ",h:"Снять одежду. Холодная вода на всё тело (лить, обтирать). Лёд в пазухи: шея, подмышки, пах."},
+    {t:"ВЕНТИЛЯЦИЯ",h:"Вентилятор + влажная кожа = испарение = максимальное охлаждение."},
+    {t:"ЦЕЛЬ",h:"Снизить температуру до 38°C как можно быстрее. Не останавливайся до охлаждения."},
+    {t:"НЕ ДАВАТЬ",h:"НЕ аспирин и НЕ парацетамол — не работают при тепловом ударе (другой механизм повышения температуры)."},
+]},
+
+fainting:{title:"😵 Обморок",badge:"СИНКОПЕ",crit:false,timer:false,metro:false,desc:"Кратковременная потеря сознания от снижения кровоснабжения мозга.",steps:[
+    {t:"ПРЕДОБМОРОЧНЫЕ ПРИЗНАКИ",h:"Головокружение, потемнение в глазах, слабость, звон, тошнота → уложи немедленно, не жди падения."},
+    {t:"НОГИ ВВЕРХ",h:"Горизонтально, ноги поднять на 15–20 см. Увеличивает кровоток к мозгу."},
+    {t:"ВОЗДУХ",h:"Расстегни одежду, проветри. НЕ давай ничего через рот пока без сознания."},
+    {t:"ВОССТАНОВЛЕНИЕ",h:"Обычно в сознание приходит за 1–2 мин. Вставать медленно — возможен повторный обморок."},
+    {t:"КОГДА 112",h:"Не приходит в сознание 1–2 мин. Судороги. Травма при падении. Первый обморок. Боль в груди перед обмороком."},
+]},
+
+low_sugar:{title:"🍬 Низкий сахар (Гипогликемия)",badge:"ДИАБЕТ",crit:false,timer:false,metro:false,desc:"Начало быстрое — за минуты. Если не уверен — дай сахар.",steps:[
+    {t:"ПРИЗНАКИ",h:"Дрожь, потливость, бледность, голод, тахикардия. Тревога, агрессия, спутанность. Начало быстрое."},
+    {t:"В СОЗНАНИИ",h:"15–20 г быстрых углеводов: 4 таблетки глюкозы / стакан сока / 3 ч.л. сахара / сладкая газировка."},
+    {t:"ПОДОЖДИ 15 МИН",h:"Симптомы не прошли → повтори. После нормализации — дать нормальную еду."},
+    {t:"БЕЗ СОЗНАНИЯ",h:"НЕ давать через рот (аспирация!). Стабильное боковое положение. 112 немедленно."},
+    {t:"ЗОЛОТОЕ ПРАВИЛО",h:"Не уверен — гипо или гипергликемия? Дай сахар. При гипо поможет, при гипергликемии незначительно ухудшит. Промедление при гипо = кома."},
+    {t:"НЕ ПУТАЙ С ПЬЯНЫМ",h:"Диабетик в гипогликемической коме часто выглядит как пьяный. При сомнении — дай сахар и 112."},
+]},
+
+// ── ОЖОГИ И ПОРАЖЕНИЯ ──
+burn:{title:"🔥 Ожог термический",badge:"COOL & COVER",crit:false,timer:false,metro:false,desc:"Отсутствие боли при ожоге = III степень. Это хуже, не лучше.",steps:[
+    {t:"СТОП",h:"Убери источник. Потуши — катать по земле, заливать водой. НЕ тяни прилипшую одежду — разрежь вокруг!"},
+    {t:"КОЛЬЦА И БРАСЛЕТЫ",h:"Снять с обожжённых зон НЕМЕДЛЕННО — отёк сделает это невозможным."},
+    {t:"ОХЛАЖДЕНИЕ 20 МИН",h:"Прохладная вода 15–20°C (НЕ ЛЁД — усиливает повреждение). Непрерывно. Критично в первые 3 часа."},
+    {t:"НАКРОЙ",h:"Стерильная влажная повязка или пищевая плёнка (не туго). НЕ вата, НЕ пластырь."},
+    {t:"ОЖОГ ДЫХАТЕЛЬНЫХ ПУТЕЙ",h:"Закрытое пространство, опалённые волосы носа/брови/ресниц, копоть вокруг рта, осиплость → 112 СРОЧНО. Отёк развивается за часы."},
+    {t:"НЕ ДЕЛАЙ",h:"Не мазать маслом/сметаной/зубной пастой. Не вскрывать волдыри. НЕ использовать лёд."},
+    {t:"КОГДА 112",h:"II степень > 10% тела. Любой III. Лицо, руки, гениталии, суставы. Электрический ожог. Ожог дыхательных путей."},
+]},
+
+eye_burn:{title:"👁️ Ожог глаз",badge:"ПРОМЫВАНИЕ",crit:false,timer:false,metro:false,desc:"Промывание начинается немедленно. Каждая секунда повреждает зрение.",steps:[
+    {t:"ПРОМЫВАНИЕ НЕМЕДЛЕННО",h:"Прохладная чистая вода. Каждая секунда важна. Не ищи идеальных условий."},
+    {t:"НАПРАВЛЕНИЕ",h:"От носа к виску. Вода не должна попасть в здоровый глаз."},
+    {t:"ОТКРОЙ ВЕКИ",h:"Больно, но необходимо. Держи глаз открытым всё время промывания."},
+    {t:"20–60 МИН НЕПРЕРЫВНО",h:"Термический ожог: 20 мин. Химический кислотой: 20–30 мин. Щёлочью: 30–60 мин — проникает глубже."},
+    {t:"ЛИНЗЫ",h:"Удали контактные линзы после 1–2 мин промывания — не до."},
+    {t:"СРОЧНО К ВРАЧУ",h:"После промывания — немедленно к офтальмологу. Химический ожог = 112."},
+]},
+
+chemical_burn:{title:"⚗️ Химический ожог",badge:"30–60 МИН ВОДЫ",crit:false,timer:false,metro:false,desc:"Химия продолжает действовать пока не смыта. НЕ нейтрализовать!",steps:[
+    {t:"ЗАЩИТА",h:"Надень перчатки прежде чем трогать пострадавшего. Не вдыхай пары."},
+    {t:"УБЕРИ ОДЕЖДУ",h:"Осторожно сними одежду с поражённого участка. Не распространяй химию."},
+    {t:"ОБИЛЬНОЕ ПРОМЫВАНИЕ",h:"Кислота: 20–30 мин воды. Щёлочь (каустик): 30–60 мин — проникает глубже, действует дольше."},
+    {t:"НЕ НЕЙТРАЛИЗУЙ!",h:"НЕ наливай кислоту на щёлочь и наоборот. Экзотермическая реакция = дополнительный ожог!"},
+    {t:"НЕГАШЁНАЯ ИЗВЕСТЬ",h:"Сначала СУХО смети кистью. ПОТОМ промывай водой. Вода + известь = реакция с выделением тепла."},
+    {t:"ПРОГЛАТЫВАНИЕ ХИМИИ",h:"НЕ вызывай рвоту (повторный ожог пищевода). Дать воды/молока до 200 мл. Сохрани упаковку для врача. 112."},
+]},
+
+co_poisoning:{title:"💨 Угарный газ (CO)",badge:"ВЫНЕСТИ — ВОЗДУХ",crit:true,timer:false,metro:false,desc:"Без запаха и цвета. Источник: неисправное отопление, пожар, гараж.",steps:[
+    {t:"УГАРНЫЙ ГАЗ НЕВИДИМ",h:"Нет запаха, нет цвета. Источники: неисправное отопление/колонка, пожар в закрытом пространстве, выхлопы в гараже."},
+    {t:"БЕЗОПАСНОСТЬ!",h:"Задержи дыхание при входе. Максимально быстро. Ты не должен стать следующей жертвой."},
+    {t:"ВЫНЕСИ НА СВЕЖИЙ ВОЗДУХ",h:"Открой окна/двери на ходу. Вынеси пострадавшего. Уйди подальше от источника."},
+    {t:"ОЦЕНИ ABCDE",h:"Нет дыхания → CPR немедленно. Без сознания + дышит → стабильное боковое положение."},
+    {t:"ПРИЗНАКИ ОТРАВЛЕНИЯ",h:"Начало: головная боль, головокружение, тошнота. Тяжёлое: спутанность, потеря сознания, судороги."},
+    {t:"ЗВОНОК 112",h:"Сообщи: отравление угарным газом, сколько пострадавших. 100% кислород в больнице ускоряет выздоровление."},
+]},
+
+electro:{title:"⚡ Электротравма",badge:"ТОК ОТКЛЮЧЁН?",crit:true,timer:false,metro:false,desc:"Снаружи минимально — внутри катастрофа. Аритмия через часы.",steps:[
+    {t:"НЕ ТРОГАЙ!",h:"Пока ток не отключён — не прикасайся к пострадавшему. Ты станешь следующей жертвой."},
+    {t:"ОБЕСТОЧЬ",h:"Выключи рубильник / выдерни вилку / отключи автомат. Не трогай провода руками."},
+    {t:"ВЫСОКОВОЛЬТНАЯ ЛИНИЯ",h:"Минимум 10 метров. Только 112. Не приближайся при любых обстоятельствах."},
+    {t:"ОЦЕНИ ABCDE",h:"Остановка сердца — главная причина смерти. CPR немедленно если не дышит."},
+    {t:"ТРАВМА ПОЗВОНОЧНИКА",h:"Судороги от тока и падение → подозревай травму позвоночника. Минимум движений."},
+    {t:"ВСЕГДА В БОЛЬНИЦУ",h:"Внешние ожоги минимальны, но внутри обширные повреждения. Аритмия может развиться через часы. Без исключений."},
+    {t:"МОЛНИЯ",h:"CPR немедленно — высокая выживаемость при раннем CPR. Нет риска вторичного удара от пострадавшего."},
+]},
+
+frostbite:{title:"🥶 Отморожение",badge:"НЕ РАСТИРАТЬ",crit:false,timer:false,metro:false,desc:"НЕ растирать. НЕ греть у огня. Вода 37–39°C.",steps:[
+    {t:"УБЕРИ ИЗ ХОЛОДА",h:"Перемести в тёплое место. Сними мокрую и тесную одежду, украшения."},
+    {t:"НЕ РАСТИРАТЬ!",h:"Кристаллы льда в тканях — растирание разрушает клетки. Это усугубляет повреждение."},
+    {t:"НЕ ГРЕТЬ У ОГНЯ",h:"Неравномерный нагрев повреждает ткани. Нельзя: батарея, огонь, грелка, горячая вода."},
+    {t:"ТЁПЛАЯ ВОДА 37–39°C",h:"Погрузи 20–30 мин. Приятно тёплая, НЕ горячая. Боль при отогревании — нормально, ткани оживают."},
+    {t:"НЕ ХОДИТЬ",h:"На отмороженных ногах не ходить — давление повреждает ткани."},
+    {t:"ОСТОРОЖНО",h:"НЕ согревай если возможно повторное замерзание — лучше оставить замороженным до окончательного тепла."},
+]},
+
+hypo:{title:"❄️ Гипотермия / Шок",badge:"PFC",crit:false,timer:false,metro:false,desc:"Не умер, пока не согрет. CPR продолжать до согревания.",steps:[
+    {t:"ИЗОЛЯЦИЯ",h:"Убери с холодного грунта/снега. Не тащи волоком по снегу — резкое движение может вызвать аритмию! Подложи коврик."},
+    {t:"УКРЫТИЕ",h:"Термоодеяло (золотом внутрь). Укутать полностью включая голову."},
+    {t:"ВЛАЖНАЯ ОДЕЖДА",h:"Сними мокрую одежду если есть чем заменить."},
+    {t:"ТЕПЛО",h:"Тёплое сладкое питьё ТОЛЬКО если в сознании. Контакт «кожа к коже» — эффективно."},
+    {t:"ЗАПРЕТЫ",h:"НЕ растирать конечности. НЕ греть быстро. Никакого алкоголя!"},
+    {t:"ПРИ ШОКЕ",h:"Горизонтально, ноги 15–30 см вверх. НЕ давать пить."},
+    {t:"«НЕ УМЕР, ПОКА НЕ СОГРЕТ»",h:"При тяжёлой гипотермии нет пульса → продолжай CPR до согревания. Люди выживали при температуре тела 14°C."},
+]},
+
+// ── ЭКСТРЕННЫЕ СИТУАЦИИ ──
+fire:{title:"🔥 Пожар / Эвакуация",badge:"ПОЖАРНАЯ БЕЗОПАСНОСТЬ",crit:false,timer:false,metro:false,desc:"Паника убивает быстрее огня. Алгоритм вместо мышления.",steps:[
+    {t:"ДЫХАНИЕ",h:"Один цикл боевого дыхания — не паникуй. Паника убивает быстрее огня."},
+    {t:"ПРОВЕРЬ ДВЕРЬ",h:"Прощупай ладонью. Горячая → НЕ открывай (огонь за ней). Заткни щели тканью."},
+    {t:"ПОЛЗИ",h:"Дым поднимается вверх. Внизу чище и прохладнее. Ползи на четвереньках или по-пластунски."},
+    {t:"ЗАКРЫВАЙ ДВЕРИ",h:"Закрывай двери за собой — замедляет распространение огня. Пожарные откроют."},
+    {t:"ЕСЛИ ВЫХОД ОТРЕЗАН",h:"К окну. Сигнализируй. Закрой щели от дыма. Выбрасывай вещи — показывай где ты."},
+    {t:"НЕ ВОЗВРАЩАЙСЯ",h:"Никогда не возвращайся за вещами и животными после эвакуации."},
+    {t:"ОЖОГ ДЫХАТЕЛЬНЫХ ПУТЕЙ",h:"Вдыхал дым? Осиплость, кашель, копоть? → 112 СРОЧНО. Отёк развивается за часы."},
+]},
+
+drowning:{title:"🌊 Утопление",badge:"БРОСАЙ — НЕ ПРЫГАЙ",crit:false,timer:false,metro:false,desc:"Тонущий в панике утащит за собой. Сначала брось предмет.",steps:[
+    {t:"ЗОВИ НА ПОМОЩЬ И 112",h:"Привлеки внимание. 112 немедленно — не жди."},
+    {t:"БРОСАЙ — НЕ ПРЫГАЙ",h:"Кольцо, верёвка, пластиковая бутылка, доска. Паникующий утащит спасателя без снаряжения."},
+    {t:"ЕСЛИ ПЛЫВЁШЬ К НЕМУ",h:"Подплывай СЗАДИ. Тяни за волосы или подмышки к берегу."},
+    {t:"НА БЕРЕГУ",h:"Нет дыхания → СНАЧАЛА 5 спасательных вдохов (дыхательная причина!), затем CPR."},
+    {t:"CPR В ВОДЕ",h:"Если мелко и есть опора — начни вдохи ещё в воде. Компрессии — только на твёрдой поверхности."},
+    {t:"ГИПОТЕРМИЯ",h:"Все утопленники переохлаждены. Продолжай CPR до согревания — «не умер, пока не согрет»."},
+    {t:"ПОСЛЕ СПАСЕНИЯ",h:"Даже при хорошем состоянии — к врачу. Вторичное утопление (отёк лёгких) развивается через 24 часа."},
+]},
+
+};// end scenarios
+
+// ══════════════════════════════════════════════════════
+//  HOME LAYOUT
+// ══════════════════════════════════════════════════════
+const HOME = [
+    {title:"КРИТИЧЕСКИЕ",  keys:["abcde","bleeding","cpr","triage"]},
+    {title:"КРОВОТЕЧЕНИЯ", keys:["nose_bleed","internal_bleed"]},
+    {title:"ДЫХАНИЕ И УДУШЬЕ", keys:["choking","choking_infant","chest","airway_swelling"]},
+    {title:"ТРАВМЫ",       keys:["head","fractures","spine","abdomen"]},
+    {title:"МЕДИЦИНСКИЕ ЧС", keys:["stroke","anaphylaxis","seizures","heat_stroke","fainting","low_sugar"]},
+    {title:"ОЖОГИ И ПОРАЖЕНИЯ", keys:["burn","eye_burn","chemical_burn","co_poisoning","electro","frostbite","hypo"]},
+    {title:"ЭКСТРЕННЫЕ СИТУАЦИИ", keys:["fire","drowning"]},
+];
+
+// ══════════════════════════════════════════════════════
+//  QUIZ QUESTIONS
+// ══════════════════════════════════════════════════════
+const Q = [
+    {q:"Приоритет №1 по протоколу MARCH?",o:["Дыхание (Airway)","Кровотечение (Massive Hemorrhage)","Переломы"],c:1},
+    {q:"Жгут накладывается:",o:["На рану","Ниже раны","Выше раны (5–7 см)"],c:2},
+    {q:"Человек без сознания, дышит нормально. Действия?",o:["Начать СЛР","Стабильное боковое положение","Дать воды"],c:1},
+    {q:"Ожог охлаждать:",o:["Льдом 5 мин","Прохладной водой 20 мин","Маслом"],c:1},
+    {q:"Буква B в BE-FAST тесте — это:",o:["Боль в груди","Balance (равновесие)","Бледность кожи"],c:1},
+    {q:"Темп компрессий при СЛР:",o:["60 в мин","100–120 в мин","Как получится"],c:1},
+    {q:"При гипотермии в поле:",o:["Растирать конечности","Изолировать от земли + укрыть","Дать алкоголь"],c:1},
+    {q:"При инсульте можно давать аспирин?",o:["Да, 300 мг сразу","Нет, нельзя до КТ","Да, 100 мг"],c:1},
+    {q:"Первое действие при электротравме:",o:["CPR пострадавшему","Обесточить источник","Вынести пострадавшего"],c:1},
+    {q:"«Светлый промежуток» при ЧМТ — это признак:",o:["Сотрясения (лёгкая ЧМТ)","Эпидуральной гематомы (срочно!)","Нормального восстановления"],c:1},
+    {q:"Язык при судорогах:",o:["Западает — нужно вставить ложку","Не западает — ничего в рот не вставлять","Западает только у детей"],c:1},
+    {q:"Что первым при удушье у младенца до 1 года?",o:["Геймлих (толчки на живот)","Удары по спине + толчки в грудь","Только CPR"],c:1},
+    {q:"При носовом кровотечении:",o:["Запрокинуть голову назад","Наклониться вперёд, зажать крылья носа","Тампон в ноздрю"],c:1},
+    {q:"Химическое вещество на коже — нейтрализовать кислотой/щёлочью?",o:["Да, это ускоряет помощь","Нет — только промывание водой","Только при щёлочи"],c:1},
+    {q:"Тампонада применяется при ранении:",o:["Конечности","Паха, подмышки или шеи","Везде одинаково"],c:1},
+    {q:"При тепловом ударе дать:",o:["Аспирин","Парацетамол","Ни то ни другое — только охлаждение"],c:2},
+    {q:"Кровь из уха после травмы головы — это:",o:["Обычное кровотечение — тампонировать","Возможно ликвор — только марля без давления","Признак несерьёзной травмы"],c:1},
+    {q:"При подозрении на травму позвоночника:",o:["Посади пострадавшего","Не двигай без крайней необходимости","Дай воды"],c:1},
+    {q:"Низкий сахар у диабетика — не уверен что делать:",o:["Ждать пока не ухудшится","Дать сахар","Вколоть инсулин"],c:1},
+    {q:"После утопления при хорошем состоянии:",o:["Можно идти домой","Обязателен осмотр врача — вторичное утопление","Достаточно полежать"],c:1},
+];
+
+// ══════════════════════════════════════════════════════
+//  COMBAT MODE — 4 протокола с именами и физическими якорями
+// ══════════════════════════════════════════════════════
+
+// Протоколы для каждого состояния
+// Каждый шаг: {txt, hint, breath?}
+const COMBAT = {
+    // ── ПРОТОКОЛ СТОП (Паника) — С-Т-О-П ──
+    // С — Стоп, Т — Тело (вздох), О — Окружение (3 предмета), П — Поведение (шаг)
+    // Физический якорь: Двойной вдох носом
+    panic: [
+        {txt:'СТОП.',               hint:'Ты здесь. Всё что случилось — уже факт. Сейчас — пауза.'},
+        {txt:'ФИЗИОЛОГИЧЕСКИЙ ВЗДОХ', hint:'Двойной вдох носом — добери ещё раз сверху. Затем медленный выдох в 2 раза длиннее.', breath:'sigh'},
+        {txt:'НАЗОВИ 3 ПРЕДМЕТА',   hint:'Вслух. Любых. Перед тобой прямо сейчас.'},
+        {txt:'СЛЕДУЮЩИЙ ШАГ.',      hint:'Одно физическое действие прямо сейчас. Надень перчатки. Встань. Скажи что-нибудь.'},
+    ],
+    // ── ПРОТОКОЛ РАЗМОРОЗКА (Замирание) — Ч-П-Н-Ш-Д ──
+    // Ч — Челюсть, П — Пальцы, Н — Ноги, Ш — Шаг, Д — Действие
+    // Физический якорь: Сжать/разжать кулаки 10 раз
+    freeze: [
+        {txt:'СТОП.',               hint:'Ты завис. Это нормально. Мозг перегружен — переключаем через тело.'},
+        {txt:'РАЗОМКНИ ЧЕЛЮСТЬ.',   hint:'Специально. Почувствуй как напряжение уходит из лица.'},
+        {txt:'СОЖМИ КУЛАКИ 10 РАЗ.', hint:'Быстро сжимай и разжимай. Запусти кровообращение.'},
+        {txt:'ВСТАНЬ.',             hint:'Два шага в любую сторону. Тело включило мозг.'},
+        {txt:'ПЕРВЫЙ ШАГ.',        hint:'Что перед тобой прямо сейчас. Один шаг — не план.'},
+    ],
+    // ── ПРОТОКОЛ ДИСТАНЦИЯ (Злость) — К-В-Ш-В ──
+    // К — Кулаки, В — Выдох, Ш — Шаг, В — Выбор
+    // Физический якорь: Раскрыть ладони
+    anger: [
+        {txt:'СТОП.',               hint:'Злость уже есть. Это факт. Что ты с ней сделаешь — твой выбор.'},
+        {txt:'РАЗОЖМИ КУЛАКИ.',     hint:'Специально. Медленно. Почувствуй пальцы. Ладони открыты = ты контролируешь.'},
+        {txt:'ДЛИННЫЙ ВЫДОХ.',      hint:'Через рот. Как будто задуваешь свечу. Медленно, до конца.', breath:'exhale'},
+        {txt:'ОТОЙДИ НА 2 ШАГА.',  hint:'Физическая дистанция — это не слабость. Это выбор.'},
+        {txt:'ОТВЕТИШЬ — ИЛИ ВЫБЕРЕШЬ?', hint:'Из импульса или из ресурса. Ты уже знаешь разницу.'},
+    ],
+    // ── ПРОТОКОЛ ПАУЗА (Перегруз) — С-Д-3-П ──
+    // С — Сядь, Д — Дыши, 3 — 3 дела, П — Первое
+    // Физический якорь: Рука на живот
+    over: [
+        {txt:'СТОП.',               hint:'Перегруз — не сигнал что ты не справляешься. Сигнал что нужна пауза.'},
+        {txt:'СЯДЬ И РУКУ НА ЖИВОТ.', hint:'Физически. Прямо сейчас. Почувствуй дыхание под ладонью.'},
+        {txt:'ДЫШИ 4-4-4-4.',       hint:'Вдох 4 сек — пауза — выдох 4 сек — пауза.', breath:'box'},
+        {txt:'НАЗОВИ 3 ДЕЛА ВСЛУХ.',hint:'Только то что реально нужно сегодня. Не всё — только три.'},
+        {txt:'ВОЗЬМИ ПЕРВОЕ.',      hint:'2 минуты на него. Не план — одно действие.'},
+    ],
+};
+
+let _combatSteps = [];
+let _combatIdx   = 0;
+let _combatTimer = null;
+let _boxTick = null, _boxPhase = 0, _boxCycle = 0;
+let _sighPhase = 0, _sighTick = null;
+
+const PHASES = [
+    {name:'ВДОХ',  color:'var(--blue)',   cls:'breath-in',   dur:4},
+    {name:'ПАУЗА', color:'var(--purple)', cls:'breath-hold', dur:4},
+    {name:'ВЫДОХ', color:'var(--green)',  cls:'breath-out',  dur:4},
+    {name:'ПАУЗА', color:'var(--sec)',    cls:'breath-out',  dur:4},
+];
+
+// ── показываем select-экран ──
+function showPanicSelect(){
+    document.getElementById('panic-select').style.display      = 'flex';
+    document.getElementById('panic-step-screen').style.display = 'none';
+    document.getElementById('panic-done').style.display        = 'none';
+    // обновляем счётчик
+    try{ document.getElementById('panic-counter').innerText = localStorage.getItem('ac_resets')||'0'; }catch(e){}
+}
+
+// ── запускаем протокол ──
+function startCombat(type){
+    if(navigator.vibrate) navigator.vibrate([80,40,80]);
+    _combatSteps = COMBAT[type] || COMBAT.panic;
+    _combatIdx   = 0;
+    document.getElementById('panic-select').style.display      = 'none';
+    document.getElementById('panic-step-screen').style.display = 'flex';
+    document.getElementById('panic-done').style.display        = 'none';
+    showCombatStep();
+}
+
+function showCombatStep(){
+    clearInterval(_boxTick); clearInterval(_sighTick); clearInterval(_combatTimer);
+    const step = _combatSteps[_combatIdx];
+
+    document.getElementById('panic-step-txt').innerText  = step.txt;
+    document.getElementById('panic-step-hint').innerText = step.hint;
+
+    const wrap = document.getElementById('panic-breath-wrap');
+    const btnTxt = _combatIdx < _combatSteps.length - 1 ? 'Сделал →' : 'Контроль возвращён ✓';
+    document.getElementById('panic-step-btn').innerText = btnTxt;
+
+    // breath animations
+    if(step.breath === 'sigh'){
+        wrap.style.display = 'flex';
+        startSigh();
+    } else if(step.breath === 'box'){
+        wrap.style.display = 'flex';
+        _boxPhase = 0; _boxCycle = 0;
+        runBoxPhase();
+    } else if(step.breath === 'exhale'){
+        wrap.style.display = 'flex';
+        startExhale();
+    } else {
+        wrap.style.display = 'none';
+        stopBreath();
+    }
+
+    if(navigator.vibrate) navigator.vibrate(50);
+}
+
+function combatNext(){
+    _combatIdx++;
+    if(_combatIdx < _combatSteps.length){
+        showCombatStep();
+    } else {
+        // done
+        clearInterval(_boxTick); clearInterval(_sighTick);
+        try{
+            const n = parseInt(localStorage.getItem('ac_resets')||'0') + 1;
+            localStorage.setItem('ac_resets', n);
+        }catch(e){}
+        document.getElementById('panic-step-screen').style.display = 'none';
+        document.getElementById('panic-done').style.display        = 'flex';
+        if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+    }
+}
+
+function backToSelect(){
+    clearInterval(_boxTick); clearInterval(_sighTick);
+    showPanicSelect();
+}
+
+// ── ФИЗИОЛОГИЧЕСКИЙ ВЗДОХ (6 сек) ──
+// двойной вдох носом (2+1 сек) → медленный выдох (6 сек)
+function startSigh(){
+    stopBreath();
+    const bv = document.getElementById('bv');
+    const cnt = document.getElementById('bc-count');
+    cnt.classList.add('hidden');
+
+    const sighSteps = [
+        {cls:'breath-in',   icon:'🫁', label:'ВДОХ',        dur:2000},
+        {cls:'breath-hold', icon:'🫁', label:'ЕЩЁ ВДОХ',   dur:1000},
+        {cls:'breath-out',  icon:'🌬️', label:'ВЫДОХ...',    dur:6000},
+    ];
+    let si = 0;
+    const runSigh = () => {
+        if(si >= sighSteps.length) return;
+        const s = sighSteps[si];
+        bv.className = 'breath-circle ' + s.cls;
+        bv.querySelector('.bc-icon').innerText = s.icon;
+        document.getElementById('panic-step-txt').innerText = s.label;
+        si++;
+        _sighTick = setTimeout(runSigh, s.dur);
+    };
+    runSigh();
+}
+
+// ── ДЛИННЫЙ ВЫДОХ ──
+function startExhale(){
+    stopBreath();
+    const bv = document.getElementById('bv');
+    const cnt = document.getElementById('bc-count');
+    bv.className = 'breath-circle breath-in';
+    bv.querySelector('.bc-icon').innerText = '🫁';
+    document.getElementById('panic-step-txt').innerText = 'ВДОХ';
+    cnt.classList.add('hidden');
+    _sighTick = setTimeout(()=>{
+        bv.className = 'breath-circle breath-out';
+        bv.querySelector('.bc-icon').innerText = '🌬️';
+        document.getElementById('panic-step-txt').innerText = 'ВЫДОХ...';
+    }, 2000);
+}
+
+// ── BOX BREATHING 4-4-4-4 ──
+function runBoxPhase(){
+    clearInterval(_boxTick);
+    const p = PHASES[_boxPhase % 4];
+    document.getElementById('panic-step-txt').innerText = p.name;
+    const bv = document.getElementById('bv');
+    bv.className = 'breath-circle ' + p.cls;
+    bv.querySelector('.bc-icon').innerText = '🫁';
+    const cnt = document.getElementById('bc-count');
+    cnt.classList.remove('hidden');
+    let rem = p.dur;
+    cnt.innerText = rem;
+    _boxTick = setInterval(()=>{
+        rem--;
+        cnt.innerText = rem;
+        if(rem <= 0){
+            clearInterval(_boxTick);
+            _boxPhase++;
+            if(_boxPhase % 4 === 0) _boxCycle++;
+            if(_boxCycle >= 1){
+                cnt.classList.add('hidden');
+                bv.className = 'breath-circle';
+                bv.querySelector('.bc-icon').innerText = '✓';
+                document.getElementById('panic-step-txt').innerText = 'ГОТОВО';
+                document.getElementById('panic-step-hint').innerText = 'Мозг перезапущен. Следующий шаг.';
+            } else runBoxPhase();
+        }
+    }, 1000);
+}
+
+function stopBreath(){
+    clearInterval(_boxTick); clearTimeout(_sighTick);
+    const bv = document.getElementById('bv');
+    if(bv){
+        bv.className = 'breath-circle';
+        const icon = bv.querySelector('.bc-icon');
+        if(icon) icon.innerText = '🫁';
+        const cnt = document.getElementById('bc-count');
+        if(cnt) cnt.classList.add('hidden');
+    }
+}
+
+// ── совместимость со старым кодом ──
+function startBox(){ startCombat('panic'); }
+function showPanicAfterBreath(){ combatNext(); }
+function panicNext(){ combatNext(); }
+
+function unlockApp(){
+    clearInterval(_boxTick); clearTimeout(_sighTick);
+    document.getElementById('panic-overlay').classList.add('hidden');
+    document.getElementById('app-root').classList.remove('hidden');
+}
+
+function showPanic(){
+    clearInterval(_boxTick); clearTimeout(_sighTick);
+    stopTimer(); stopMetro();
+    document.getElementById('panic-overlay').classList.remove('hidden');
+    document.getElementById('app-root').classList.add('hidden');
+    showPanicSelect();
+}
+
+// Совместимость BV/PMSG/PSUB — больше не используются активно
+const BV   = ()=>document.getElementById('bv');
+const PMSG = ()=>document.getElementById('panic-msg');
+const PSUB = ()=>document.getElementById('panic-sub');
+
+// ══════════════════════════════════════════════════════
+//  HISTORY API — свайп назад iOS / кнопка назад Android
+// ══════════════════════════════════════════════════════
+function pushNav(state){
+    // push a named state so popstate can intercept swipe/back
+    history.pushState(state, '');
+}
+
+window.addEventListener('popstate', ()=>{
+    // любой свайп назад или кнопка Android — перехватываем
+    const sceneVisible   = !document.getElementById('v-scene').classList.contains('hidden');
+    const readerVisible  = !document.getElementById('cl-reader').classList.contains('hidden');
+    const testVisible    = !document.getElementById('cl-test').classList.contains('hidden');
+    const detailVisible  = !document.getElementById('course-detail').classList.contains('hidden');
+
+    if(sceneVisible)  { goHome();      history.pushState('home',''); return; }
+    if(readerVisible) { courseBack();  history.pushState('lessons',''); return; }
+    if(testVisible)   { courseBack();  history.pushState('lessons',''); return; }
+    if(detailVisible) { closeModDetail(); history.pushState('course',''); return; }
+    // на главной — ничего не делаем (пусть браузер решает)
+});
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function switchView(id){
+    document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    if(id!=='v-scene'){stopTimer();stopMetro();}
+    const noBack = ['v-home','v-mist','v-theory','v-quiz'];
+    updateBackBar(!noBack.includes(id), 'Назад');
+    if(!noBack.includes(id)) pushNav(id);
+    window.scrollTo(0,0);
+}
+function goNav(vid,nid){
+    switchView(vid);
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+    document.getElementById(nid).classList.add('on');
+}
+function goHome(){
+    stopTimer();stopMetro();
+    goNav('v-home','n-home');
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════════════════════
+function renderHome(){
+    const el=document.getElementById('home-content');
+    el.innerHTML='';
+    HOME.forEach(sec=>{
+        const hdr=document.createElement('div');
+        hdr.className='sec-hdr';
+        hdr.innerText=sec.title;
+        el.appendChild(hdr);
+        sec.keys.forEach(k=>{
+            const sc=S[k];
+            if(!sc) return;
+            const d=document.createElement('div');
+            d.className='sc-card'+(sc.crit?' crit':'');
+            d.onclick=()=>loadScene(k);
+            d.innerHTML=`
+                <div><span class="badge" style="${sc.crit?'background:rgba(239,68,68,.15);color:var(--red)':''}">${sc.badge}</span></div>
+                <div class="sc-title">${sc.title}</div>
+                <div class="sc-desc">${sc.desc}</div>`;
+            el.appendChild(d);
+        });
+    });
+}
+
+// ══════════════════════════════════════════════════════
+//  LOAD SCENARIO
+// ══════════════════════════════════════════════════════
+function loadScene(key){
+    const sc=S[key];
+    document.getElementById('sc-title').innerText=sc.title;
+    const c=document.getElementById('sc-steps');
+    c.innerHTML='';
+    sc.steps.forEach((s,i)=>{
+        const d=document.createElement('div');
+        d.className='step-item';
+        d.style.animationDelay=`${i*.055}s`;
+        const warn=s.t.startsWith('⚠️')||s.t.startsWith('НЕ ')||s.t.toUpperCase().startsWith('ЗАПРЕТ');
+        d.innerHTML=`<div class="step-num${warn?' warn':''}">${i+1}</div><div class="step-t">${s.t}</div><div class="step-h">${s.h}</div>`;
+        c.appendChild(d);
+    });
+    const tb=document.getElementById('timer-bar');
+    if(sc.timer){tb.classList.remove('hidden');startTimer();}
+    else{tb.classList.add('hidden');stopTimer();}
+    document.getElementById('tool-metro').classList.toggle('hidden',!sc.metro);
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+    switchView('v-scene');
+}
+
+// ══════════════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════════════
+let _timer=null;
+function startTimer(){
+    stopTimer();
+    let s=0;
+    const el=document.getElementById('timer-bar');
+    _timer=setInterval(()=>{
+        s++;
+        const m=Math.floor(s/60).toString().padStart(2,'0');
+        const sec=(s%60).toString().padStart(2,'0');
+        el.innerText=`⏱ ${m}:${sec}`;
+        if(s%1800===0&&navigator.vibrate)navigator.vibrate([500,200,500]);
+    },1000);
+}
+function stopTimer(){
+    clearInterval(_timer);
+    const el=document.getElementById('timer-bar');
+    if(el)el.innerText='⏱ 00:00';
+}
+
+// ══════════════════════════════════════════════════════
+//  METRONOME
+// ══════════════════════════════════════════════════════
+let _metro=null,_metroOn=false;
+function toggleMetro(){_metroOn?stopMetro():startMetro();}
+function startMetro(){
+    _metroOn=true;
+    document.getElementById('btn-metro').innerText='СТОП';
+    const dots=document.querySelectorAll('.beat-dot');
+    let cnt=0;
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    _metro=setInterval(()=>{
+        dots.forEach(d=>d.classList.remove('beat-on'));
+        dots[cnt%4].classList.add('beat-on');
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=cnt%4===0?880:440;
+        g.gain.setValueAtTime(.1,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.1);
+        o.start();o.stop(ctx.currentTime+.1);
+        cnt++;
+    },545);
+}
+function stopMetro(){
+    _metroOn=false;clearInterval(_metro);
+    const b=document.getElementById('btn-metro');
+    if(b)b.innerText='СТАРТ';
+    document.querySelectorAll('.beat-dot').forEach(d=>d.classList.remove('beat-on'));
+}
+
+// ══════════════════════════════════════════════════════
+//  112 MODAL
+// ══════════════════════════════════════════════════════
+function show112(){location.href='tel:112';}
+function show112modal(){document.getElementById('modal-112').classList.remove('hidden');}
+function close112(e){
+    if(!e||e.target===document.getElementById('modal-112'))
+        document.getElementById('modal-112').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════
+//  MIST
+// ══════════════════════════════════════════════════════
+function copyMist(){
+    const t=`MIST REPORT:\nM: ${document.getElementById('mm').value}\nI: ${document.getElementById('mi').value}\nS: ${document.getElementById('ms').value}\nT: ${document.getElementById('mt').value}`;
+    const w=()=>{const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);};
+    if(navigator.clipboard)navigator.clipboard.writeText(t).catch(w);else w();
+    const b=document.getElementById('btn-copy');
+    b.innerText='✅ СКОПИРОВАНО!';
+    setTimeout(()=>b.innerText='📋 КОПИРОВАТЬ ТЕКСТ',2000);
+}
+
+// ══════════════════════════════════════════════════════
+//  COURSE DATA — 8 MODULES
+// ══════════════════════════════════════════════════════
+const COURSE = [
+{
+    id:0, title:"Победить ступор",
+    sub:"Физиология стресса · Боевое дыхание · Anti-Freeze",
+    blocks:[
+        {type:"normal", title:"Почему мы застываем",
+         body:`Когда ты видишь кровь или человека без сознания, <strong>амигдала отправляет сигнал тревоги быстрее</strong>, чем префронтальная кора успевает включить логику — это занимает доли секунды.<br><br>
+<strong>Три реакции (3F):</strong><br>
+Fight — агрессия · Flight — бегство · <strong>Freeze — ступор ← это мы устраняем</strong><br><br>
+<strong>Физические эффекты стресса:</strong> пульс до 180+, тоннельное зрение, потеря мелкой моторики, замедление мышления, тремор рук.<br><br>
+<em>Ступор — не слабость. Это эволюционный механизм. Его можно прервать через тело.</em>`},
+
+        {type:"key", title:"🔑 МЕХАНИЗМ ПАНИКИ: как это ломать",
+         body:`<strong>Цепь реакции:</strong><br>
+1. Триггер (угроза) → 2. Амигдала активируется → 3. Кортизол + адреналин в кровь → 4. Тело в режиме «бей/беги/замри» → 5. Префронтальная кора отключается → 6. Ты НЕ можешь думать — только реагировать<br><br>
+<strong>🔑 КЛЮЧ:</strong> Нельзя «думать» себя из паники. Нужно ФИЗИЧЕСКОЕ действие:<br>
+→ <strong>Дыхание</strong> (длинный выдох активирует парасимпатику)<br>
+→ <strong>Движение</strong> (шаг, присед, сжать кулаки)<br>
+→ <strong>Фокус</strong> (назови 3 предмета)<br><br>
+<em>Протокол СТОП работает потому что переключает мозг через тело.</em>`},
+
+        {type:"key", title:"🔑 МЕХАНИЗМ ЗАМИРАНИЯ: как это ломать",
+         body:`<strong>Цепь реакции:</strong><br>
+1. Слишком много информации/выбора → 2. Мозг не может решить → 3. Зависает → 4. Тело переходит в энергосбережение → 5. Ты чувствуешь «ватность», «туман»<br><br>
+<strong>🔑 КЛЮЧ:</strong> Нельзя «решить» себя из замирания. Нужно МИНИМАЛЬНОЕ действие:<br>
+→ <strong>Пошевелить пальцами</strong> (10 раз сжать/разжать)<br>
+→ <strong>Разомкнуть челюсть</strong> (напряжение лица → сигнал мозгу)<br>
+→ <strong>Встать и сделать 2 шага</strong> (тело запустило мозг)<br><br>
+<em>Протокол Разморозка: челюсть → пальцы → ноги → шаг → действие.</em>`},
+
+        {type:"key", title:"Боевое дыхание 4-4-4-4",
+         body:`Используется ФБР, спецназом, хирургами. Активирует парасимпатику → снижает ЧСС → возвращает логику.<br><br>
+<strong>ВДОХ носом — 4 сек · ПАУЗА — 4 сек · ВЫДОХ ртом — 4 сек · ПАУЗА — 4 сек</strong><br><br>
+Один цикл = 16 секунд. <strong>Двух циклов достаточно</strong> чтобы мозг вернулся в рабочий режим.<br><br>
+Дыхание 4-7-8: вдох 4 сек → пауза 7 сек → выдох 8 сек. Используй если есть несколько минут до ЧС.`},
+
+        {type:"key", title:"Три техники прерывания ступора",
+         body:`<strong>1. Голос команды:</strong> скажи вслух «СТОП. Что сейчас важно?» — речь активирует левое полушарие и переключает мозг из паники в анализ.<br><br>
+<strong>2. Первый шаг:</strong> надень перчатки, крикни «Помогите!» — любое физическое действие разрушает ступор. Именно для этого нужен алгоритм: выполнять следующий шаг, не думать.<br><br>
+<strong>3. Заземление:</strong> назови вслух 3 предмета вокруг тебя — возвращает в «здесь и сейчас».`},
+
+        {type:"warn", title:"Управление чужой паникой",
+         body:`<strong>Именное поручение:</strong> «Ты в синей куртке — звони 112 прямо сейчас! Ты в красном — аптечка из машины!»<br><br>
+Конкретный человек + конкретная задача = действие. Анонимный призыв «кто-нибудь помогите» работает плохо.<br><br>
+<strong>Уверенный голос:</strong> говори низко, чётко, медленно. Паника заразна — но уверенность тоже.`},
+
+        {type:"normal", title:"📍 МАТРИЦА СЦЕНАРИЕВ: когда и где применять",
+         body:`<strong>Конфликт на работе / в семье:</strong><br>
+→ Протокол Дистанция (разожми кулаки → выдох → 2 шага → выбор)<br>
+→ Когда: чувствуешь жар в груди, сжатые челюсть/кулаки<br><br>
+<strong>Дедлайн / паника перед задачей:</strong><br>
+→ Протокол СТОП (вздох → 3 предмета → следующий шаг)<br>
+→ Когда: не можешь начать, скроллишь, «паралич анализа»<br><br>
+<strong>Спор / агрессия на улице:</strong><br>
+→ Протокол Дистанция (отойти на 2 шага → выбор)<br>
+→ Когда: хочешь ударить/кричать, «кипит кровь»<br><br>
+<strong>Перегруз информацией / выбором:</strong><br>
+→ Протокол Разморозка (челюсть → пальцы → встань → шаг)<br>
+→ Когда: «туплю», «ватная голова», не можешь решить<br><br>
+<strong>Ночью / тревога перед сном:</strong><br>
+→ Протокол СТОП или дыхание 4-7-8<br>
+→ Когда: не можешь уснуть, мысли крутятся<br><br>
+<strong>После стрессового события:</strong><br>
+→ Протокол Пауза (сядь → дыши → 3 дела → первое)<br>
+→ Когда: «трясет», «не отходит», сердце колотится`},
+
+        {type:"key", title:"📌 4 ПРОТОКОЛА — БЫСТРЫЙ ЯКОРЬ",
+         body:`<strong>🛑 СТОП (Паника) — С-Т-О-П</strong><br>
+«СТОП. Ты здесь.»<br>
+<strong>С</strong>топ → <strong>Т</strong>ело (вздох) → <strong>О</strong>кружение (3 предмета) → <strong>П</strong>оведение (шаг)<br><br>
+
+<strong>🧊 Разморозка (Завис) — Ч-П-Н-Ш-Д</strong><br>
+«Тело включило мозг.»<br>
+<strong>Ч</strong>елюсть → <strong>П</strong>альцы → <strong>Н</strong>оги → <strong>Ш</strong>аг → <strong>Д</strong>ействие<br><br>
+
+<strong>🔥 Дистанция (Злость) — К-В-Ш-В</strong><br>
+«Дистанция = контроль.»<br>
+<strong>К</strong>улаки → <strong>В</strong>ыдох → <strong>Ш</strong>аг → <strong>В</strong>ыбор<br><br>
+
+<strong>⏸️ Пауза (Перегруз) — С-Д-3-П</strong><br>
+«Пауза — это не слабость.»<br>
+<strong>С</strong>ядь → <strong>Д</strong>ыши → <strong>3</strong> дела → <strong>П</strong>ервое<br><br>
+
+<em>📌 ЗАПОМНИ: 1 минута практики = 1 день автоматизма в стрессе.</em>`},
+    ],
+    quiz:[
+        {q:"Первое действие при ступоре по протоколу Модуля 0:",o:["Начать думать о плане","Тактическое дыхание + любое физическое действие","Позвать кого-нибудь"],c:1},
+        {q:"Боевое дыхание 4-4-4-4 снижает стресс, потому что:",o:["Отвлекает мозг от проблемы","Медленный выдох активирует парасимпатическую нервную систему","Увеличивает давление"],c:1},
+        {q:"Ты видишь кровотечение и «завис». Первый шаг:",o:["Подождать пока пройдёт","Надеть перчатки — любое физическое действие","Позвонить другу за советом"],c:1},
+    ]
+},
+{
+    id:1, title:"Оценка обстановки",
+    sub:"СБЕРУ · ABCDE · AVPU · Стабильное боковое положение",
+    blocks:[
+        {type:"normal", title:"Шаг 0: Безопасность — аббревиатура СБЕРУ",
+         body:`Прежде чем подойти — одна секунда взгляда может спасти твою жизнь.<br><br>
+<strong>С</strong> — Сцена безопасна? (огонь, газ, трафик, электричество)<br>
+<strong>Б</strong> — Биологическая угроза? (кровь, жидкости → перчатки!)<br>
+<strong>Е</strong> — Ещё жертвы? (сколько пострадавших)<br>
+<strong>Р</strong> — Ресурсы? (что есть у меня и вокруг)<br>
+<strong>У</strong> — Угрозы продолжаются? (нападавший не ушёл?)<br><br>
+<em>Если сцена небезопасна — не входи. Дай инструкции голосом.</em>`},
+
+        {type:"key", title:"Алгоритм ABCDE — работает по приоритету",
+         body:`<strong>A — Airway:</strong> Смотри–Слушай–Чувствуй 10 сек. Запрокинь голову + подними подбородок. При травме шеи — только выдвижение челюсти.<br><br>
+<strong>B — Breathing:</strong> Дышит нормально? Агональные вздохи = НЕ ДЫШИТ → CPR. Одностороннее движение груди = пневмоторакс.<br><br>
+<strong>C — Circulation:</strong> Жизнеугрожающее кровотечение → остановить ПЕРВЫМ. Нет пульса → CPR. Признаки шока → горизонтально, ноги вверх.<br><br>
+<strong>D — Disability (AVPU):</strong> A-в сознании / V-на голос / P-на боль / U-не реагирует. Зрачки: разные = критично.<br><br>
+<strong>E — Exposure:</strong> Разрежь одежду, осмотри всё тело. После осмотра — немедленно накрой.`},
+
+        {type:"normal", title:"Стабильное боковое положение (СБП)",
+         body:`Применяй когда: человек без сознания + дышит + нет подозрения на травму позвоночника.<br><br>
+<strong>Алгоритм:</strong><br>
+1. Ближнюю к тебе руку — под прямым углом (ладонью вверх)<br>
+2. Дальнюю руку — через грудь, кисть под щёку<br>
+3. Дальнюю ногу — согни в колене<br>
+4. Потяни за колено — поворот на бок<br>
+5. Голова слегка запрокинута, рот направлен вниз<br>
+6. Контроль дыхания каждые 30 секунд<br><br>
+<em>Цель: предотвратить аспирацию рвотных масс.</em>`},
+
+        {type:"normal", title:"Как правильно вызвать 112",
+         body:`<strong>6 шагов:</strong><br>
+1. Кто звонит — имя<br>
+2. Что случилось — кратко: «мужчина без сознания, не дышит»<br>
+3. Где — адрес точно, если не знаешь — ориентиры<br>
+4. Сколько пострадавших<br>
+5. Что уже сделано — «жгут наложен в 14:20»<br>
+6. Не вешай трубку первым — диспетчер руководит<br><br>
+<strong>💡 Включи громкую связь</strong> — работай и слушай одновременно.`},
+    ],
+    quiz:[
+        {q:"Что означает буква P в шкале AVPU?",o:["Пострадавший","Реагирует только на боль (Pain)","Потеря пульса"],c:1},
+        {q:"Стабильное боковое положение применяется когда:",o:["Нет дыхания","Без сознания + дышит + нет травмы позвоночника","Есть сильное кровотечение"],c:1},
+        {q:"Первый шаг по ABCDE при сильном видимом кровотечении:",o:["A — открыть дыхательные пути","C — остановить кровотечение (в TCCC это ПЕРВЫЙ приоритет)","D — проверить сознание"],c:1},
+    ]
+},
+{
+    id:2, title:"СЛР и AED",
+    sub:"ERC 2025 · Компрессии · Дефибриллятор · Дети",
+    blocks:[
+        {type:"key", title:"Алгоритм CPR — взрослый",
+         body:`<strong>Время = нейроны.</strong> Без кислорода мозг начинает умирать через 4–6 минут.<br><br>
+1. Безопасность сцены<br>
+2. Потряси, окликни: «ТЫ МЕНЯ СЛЫШИШЬ?»<br>
+3. Поручи конкретному человеку: «ТЫ — 112, ТЫ — AED»<br>
+4. Запрокинь голову. Смотри–Слушай–Чувствуй 10 сек<br>
+5. <strong>30 компрессий:</strong> центр грудины, глубина 5–6 см, темп 100–120/мин, руки прямые<br>
+6. <strong>2 вдоха</strong> (только с маской). Без маски — компрессии без остановки<br>
+7. Повторяй 30:2 до AED или врачей`},
+
+        {type:"warn", title:"Частые ошибки при CPR",
+         body:`<strong>Недостаточная глубина</strong> — давить нужно 5–6 см. Это больше чем кажется.<br><br>
+<strong>Согнутые руки</strong> — работай весом тела, руки прямые, нависай над грудиной.<br><br>
+<strong>Прерывания</strong> — каждый перерыв > 10 сек снижает выживаемость. Меняйся каждые 2 минуты.<br><br>
+<strong>Агональные вздохи</strong> (редкие судорожные вздохи) принимают за дыхание — это НЕ дыхание, начинай CPR.`},
+
+        {type:"normal", title:"AED — дефибриллятор",
+         body:`AED есть в аэропортах, ТЦ, стадионах, метро.<br><br>
+<strong>4 шага:</strong><br>
+1. Включи — будет голосовое руководство<br>
+2. Наклей электроды (картинки на упаковке)<br>
+3. Отойди, не касайся — AED анализирует ритм<br>
+4. Нажми кнопку разряда когда прибор скажет<br><br>
+После разряда — немедленно продолжай CPR. <strong>AED не заменяет CPR.</strong>`},
+
+        {type:"normal", title:"CPR у детей — отличия",
+         body:`<strong>Ребёнок 1–8 лет:</strong><br>
+— Сначала <strong>5 спасательных вдохов</strong> (дыхание — частая причина остановки)<br>
+— Глубина компрессий ~5 см<br>
+— 30:2 (один спасатель) или 15:2 (двое)<br>
+— AED: используй детские электроды или детский режим<br><br>
+<strong>Младенец до 1 года:</strong><br>
+— 5 спасательных вдохов<br>
+— Два пальца на грудину (1 палец ниже сосков)<br>
+— Глубина 4 см · Темп 100–120/мин · Соотношение 30:2`},
+    ],
+    quiz:[
+        {q:"Правильная глубина компрессий при CPR у взрослого:",o:["2–3 см","5–6 см","7–8 см"],c:1},
+        {q:"Агональные вздохи при CPR:",o:["Признак что CPR помогает — продолжай","Не считаются дыханием — начинай CPR","Повод остановить CPR"],c:1},
+        {q:"CPR у ребёнка отличается от взрослого тем, что:",o:["Глубина 8 см","Сначала 5 спасательных вдохов, потом компрессии","Темп 60 в минуту"],c:1},
+    ]
+},
+{
+    id:3, title:"Контроль кровотечений",
+    sub:"MARCH · Жгут · Тампонада · Шок",
+    blocks:[
+        {type:"warn", title:"Критические цифры",
+         body:`<strong>Смерть от артериального кровотечения конечности: 3–5 минут.</strong><br>
+Потеря 30% крови (1.5 литра) → тяжёлый геморрагический шок.<br><br>
+В тактической медицине (MARCH) кровотечение проверяют <strong>ПЕРВЫМ</strong> — до дыхательных путей.<br><br>
+<em>Кровь — главный триггер стресса. При её виде скажи: «Это жидкость. Её нужно остановить. Первый шаг — перчатки.»</em>`},
+
+        {type:"key", title:"Жгут-турникет (CAT)",
+         body:`Применяй при артериальном кровотечении конечности.<br><br>
+1. Место: <strong>5–7 см выше раны</strong> на плечо или бедро (не на сустав)<br>
+2. Затягивай ворот до <strong>полной остановки кровотечения</strong><br>
+3. Это <strong>болезненно</strong> — и это правильно. Недостянутый жгут хуже чем туго стянутый<br>
+4. <strong>Запиши время:</strong> «ТЖ 14:35» — на коже маркером или на жгуте<br>
+5. Жгут должен быть виден, не прикрывай одеждой<br><br>
+Допустимое время: <strong>до 2 часов</strong> риск минимален. Снимут в больнице — не ты.`},
+
+        {type:"key", title:"Тампонада раны",
+         body:`Применяй при ранении паха, подмышки, шеи — куда жгут не наложишь.<br><br>
+1. Надень перчатки<br>
+2. Открой рану — нужно видеть источник кровотечения<br>
+3. Введи марлю <strong>ВГЛУБЬ</strong> к источнику (не просто накрой сверху)<br>
+4. Заполняй слоями, складывая<br>
+5. Плотно прижми ладонями: <strong>3 минуты (гемостатик)</strong> или <strong>10 минут (обычная марля)</strong><br>
+6. Зафиксируй давящей повязкой<br><br>
+<strong>При ранении шеи:</strong> давить на БОКОВУЮ поверхность к позвоночнику. НЕ на переднюю — трахея!`},
+
+        {type:"normal", title:"Геморрагический шок — распознай",
+         body:`<strong>Признаки:</strong> бледная холодная липкая кожа, частый слабый пульс, тревога, жажда, спутанность.<br><br>
+<strong>Положение:</strong> горизонтально, ноги поднять на 15–30 см.<br><br>
+<strong>НЕ делать:</strong><br>
+— Не давать воду/еду (возможна операция)<br>
+— Не поднимать голову (только ноги)<br>
+— Не оставлять без присмотра<br><br>
+<em>При тяжёлой гипотермии свёртываемость крови ухудшается — согревай!</em>`},
+    ],
+    quiz:[
+        {q:"Жгут накладывается:",o:["На рану","Ниже раны","Выше раны на 5–7 см на плечо или бедро"],c:2},
+        {q:"При ранении шеи давить нужно:",o:["Прямо на рану спереди","На боковую поверхность к позвоночнику","Не давить вообще"],c:1},
+        {q:"Тампонада применяется при ранении:",o:["Конечности","Паха, подмышки или шеи","Живота"],c:1},
+    ]
+},
+{
+    id:4, title:"Дыхательные пути",
+    sub:"Удушье · Геймлих · Младенцы · СБП",
+    blocks:[
+        {type:"normal", title:"Распознать удушье",
+         body:`<strong>Частичная обструкция (дышит):</strong><br>
+Кашляет — поощряй кашлять сильнее. <strong>Не вмешивайся.</strong> Эффективный кашель лучше любого приёма.<br><br>
+<strong>Полная обструкция (не дышит):</strong><br>
+— Не может говорить или кашлять<br>
+— Хватается за горло (универсальный жест)<br>
+— Синюшность губ, открытый рот<br>
+→ Действуй <strong>немедленно</strong>`},
+
+        {type:"key", title:"Алгоритм 5+5 — взрослый",
+         body:`<strong>5 ударов по спине:</strong> наклони вперёд, основание ладони, между лопатками, резко и сильно.<br><br>
+<strong>5 толчков Геймлиха:</strong> встань сзади, кулак выше пупка ниже грудины, накрой второй рукой, резкий толчок вверх-на-себя.<br><br>
+Чередуй 5+5 до успеха или потери сознания.<br><br>
+<strong>Потерял сознание →</strong> пол + CPR. Перед каждым вдохом смотри в рот — убирай <em>только видимый</em> предмет. <strong>Слепой поиск пальцем — нельзя.</strong>`},
+
+        {type:"warn", title:"Младенец до 1 года — другой алгоритм!",
+         body:`<strong>Геймлих (толчки на живот) ЗАПРЕЩЁН</strong> — риск разрыва органов.<br><br>
+<strong>5 ударов по спине:</strong> держи лицом вниз на предплечье, голова НИЖЕ тела, 5 ударов основанием ладони между лопатками.<br><br>
+<strong>5 толчков в грудь:</strong> переверни лицом вверх на предплечье, 2 пальца на грудину (на 1 палец ниже сосков), 5 резких толчков вниз (~4 см).<br><br>
+Чередуй 5+5 до успеха.`},
+
+        {type:"normal", title:"Геймлих на себе и особые случаи",
+         body:`<strong>На себе:</strong> кулак на живот + вторая рука резко вверх-внутрь. Или: прижмись животом к углу стола/спинке стула.<br><br>
+<strong>Беременные и тучные:</strong> толчки в грудь (не в живот). Кулак на нижнюю треть грудины, резко назад.<br><br>
+<strong>После устранения:</strong> всегда к врачу — повреждение внутренних органов возможно даже после успешного Геймлиха.`},
+    ],
+    quiz:[
+        {q:"Человек эффективно кашляет при удушье. Твои действия:",o:["Немедленно Геймлих","Не вмешивайся — поощряй кашлять","Удары по спине"],c:1},
+        {q:"При удушье у младенца до 1 года:",o:["Геймлих как у взрослого, только мягче","Удары по спине + толчки в грудь. Геймлих запрещён!","Только встряхнуть"],c:1},
+        {q:"Если подавившийся потерял сознание:",o:["Прекратить помощь","Положить, начать CPR, перед вдохом смотреть в рот","Геймлих лёжа"],c:1},
+    ]
+},
+{
+    id:5, title:"Травмы",
+    sub:"ЧМТ · Позвоночник · Переломы · Живот",
+    blocks:[
+        {type:"warn", title:"ЧМТ — опасные признаки",
+         body:`<strong>Светлый промежуток:</strong> потерял сознание → пришёл в себя → снова потерял. Это эпидуральная гематома. <strong>СРОЧНО в нейрохирургию!</strong><br><br>
+<strong>Вызывай 112 немедленно при:</strong><br>
+— Потеря сознания любой длительности<br>
+— Повторная рвота<br>
+— «Самая сильная боль в жизни»<br>
+— Кровь из уха (→ НЕ тампонировать, это ликвор!)<br>
+— Разные зрачки<br>
+— Судороги<br><br>
+<strong>НЕ делать:</strong> давить на вдавленные переломы черепа, давать алкоголь, оставлять одного.`},
+
+        {type:"key", title:"Травма позвоночника — главное правило",
+         body:`<strong>Не двигай пострадавшего без крайней необходимости.</strong> Одно лишнее движение может превратить частичный разрыв спинного мозга в полный.<br><br>
+<strong>Когда подозревать:</strong> ДТП, падение с высоты, ныряние, удар по спине, «хлыст», потеря сознания при травме.<br><br>
+<strong>Признаки повреждения:</strong> онемение/покалывание, слабость конечностей, потеря контроля над мочевым пузырём.<br><br>
+<strong>Как держать:</strong> обхвати голову с боков, нейтральная позиция, лёгкое вытяжение вверх — держи до скорой.`},
+
+        {type:"normal", title:"Переломы — иммобилизация",
+         body:`<strong>Главное правило:</strong> не вправляй. Зафиксируй в том положении, в котором нашёл.<br><br>
+Шина захватывает <strong>сустав выше и ниже</strong> перелома.<br><br>
+<strong>Проверь пульс</strong> до и после фиксации. Нет пульса ниже → ослабь шину.<br><br>
+<strong>Перелом бедра:</strong> кровопотеря до 1.5 литра → следи за шоком.<br>
+<strong>Перелом таза:</strong> кровопотеря до 4 литров → <strong>НЕ сдавливай таз руками</strong> для проверки!`},
+
+        {type:"warn", title:"Проникающая рана живота",
+         body:`<strong>НЕ вправляй выпавшие органы</strong> — накрой влажной стерильной повязкой.<br><br>
+<strong>НЕ извлекай инородный предмет</strong> — он держит сосуды. Зафиксируй валиком из бинта вокруг.<br><br>
+<strong>НЕ давать есть и пить</strong> — возможна экстренная операция под наркозом.<br><br>
+Положение: на спине, ноги согнуты в коленях. Только 112 — только хирург.`},
+    ],
+    quiz:[
+        {q:"«Светлый промежуток» при ЧМТ — это признак:",o:["Сотрясения (норма)","Эпидуральной гематомы — срочно в нейрохирургию","Нормального восстановления"],c:1},
+        {q:"Кровь из уха после травмы головы:",o:["Тампонировать — обычное кровотечение","Прикрыть марлей БЕЗ давления, может быть ликвор","Промыть и забинтовать"],c:1},
+        {q:"При проникающей ране живота с выпавшими органами:",o:["Вправить органы назад","Накрыть влажной стерильной повязкой, не вправлять","Наложить давящую повязку"],c:1},
+    ]
+},
+{
+    id:6, title:"Медицинские ЧС",
+    sub:"Инсульт · Инфаркт · Анафилаксия · Судороги · Диабет",
+    blocks:[
+        {type:"key", title:"Инсульт — тест BE-FAST",
+         body:`Каждую минуту инсульта гибнет ~2 миллиона нейронов. <strong>Тромболизис работает только в первые 4.5 часа.</strong><br><br>
+<strong>B</strong>alance — нарушение равновесия<br>
+<strong>E</strong>yes — нарушение зрения, двоение<br>
+<strong>F</strong>ace — асимметрия лица («улыбнись»)<br>
+<strong>A</strong>rms — слабость руки («подними обе»)<br>
+<strong>S</strong>peech — нарушение речи<br>
+<strong>T</strong>ime — <strong>запомни время симптомов и сразу 112</strong><br><br>
+<em>При инсульте: не горизонтально, не аспирин до КТ, голова 30° выше.</em>`},
+
+        {type:"normal", title:"Инфаркт — распознать и помочь",
+         body:`<strong>Классика:</strong> боль/давление за грудиной, иррадиация в руку/челюсть, холодный пот, страх смерти.<br><br>
+<strong>Атипично (у женщин, пожилых, диабетиков):</strong> только слабость, или только одышка, или только боль в животе — без боли в груди!<br><br>
+<strong>Действия:</strong> усади (не стоять!) → расстегни одежду → 112 → аспирин 150–325 мг разжевать (если нет аллергии).<br><br>
+<strong>Нитроглицерин:</strong> только если есть у пациента. НЕ давать если АД < 90/60 или принимал Виагру.`},
+
+        {type:"warn", title:"Анафилаксия — адреналин первым",
+         body:`<strong>Антигистаминные НЕ останавливают анафилаксию. Люди умирают, отказавшись от адреналина ради тавегила.</strong><br><br>
+<strong>EpiPen:</strong> наружная поверхность бедра, через одежду, держать 10 сек.<br>
+Взрослый 0.3 мг · ребёнок до 30 кг — 0.15 мг.<br>
+Нет улучшения через 5–15 мин → повторить.<br><br>
+<strong>Положение:</strong> одышка → полусидя. Низкое давление → лёжа, ноги вверх.`},
+
+        {type:"warn", title:"Судороги — что НЕ делать",
+         body:`<strong>Язык при судорогах не западает — это миф.</strong><br>
+Вставлять ложку, пальцы, ремень в рот — <strong>нельзя</strong>. Риск перелома зубов и пальцев.<br><br>
+<strong>Не удерживай насильно</strong> — переломы у обоих.<br><br>
+<strong>Что делать:</strong> засеки время, убери острые предметы, подложи мягкое под голову, переверни на бок при рвоте.<br><br>
+<strong>112 если:</strong> более 5 минут, первый раз в жизни, повторный приступ, беременность.`},
+    ],
+    quiz:[
+        {q:"При инсульте аспирин:",o:["Дать 300 мг сразу","Нельзя до КТ — может быть геморрагический","Дать 100 мг и ждать"],c:1},
+        {q:"При анафилаксии первым делом:",o:["Антигистаминный (тавегил)","Адреналин (EpiPen) в бедро","Вызвать 112 и ждать"],c:1},
+        {q:"При судорогах нужно:",o:["Вставить ложку между зубов","Убрать острые предметы, засечь время, не удерживать","Прижать к полу"],c:1},
+    ]
+},
+{
+    id:7, title:"Ожоги и поражения",
+    sub:"Термические · Химические · Электро · CO · Отморожение",
+    blocks:[
+        {type:"key", title:"Термический ожог — алгоритм",
+         body:`<strong>Отсутствие боли при ожоге = III степень. Это хуже, не лучше — нервы повреждены.</strong><br><br>
+1. <strong>Стоп:</strong> убери источник. НЕ тяни прилипшую одежду — разрежь вокруг. Сними кольца/браслеты (отёк!)<br>
+2. <strong>Охлаждение 20 мин:</strong> прохладная вода 15–20°C. НЕ ЛЁД — усиливает повреждение<br>
+3. <strong>Накрой:</strong> пищевая плёнка (не туго) или влажная ткань<br>
+4. <strong>НЕ мазать:</strong> масло, сметана, зубная паста, спирт — запрещены<br><br>
+<strong>Ожог дыхательных путей:</strong> закрытое пространство + копоть вокруг рта + осиплость → 112 срочно, отёк развивается за часы.`},
+
+        {type:"warn", title:"Химический ожог — главная ошибка",
+         body:`<strong>НЕ нейтрализуй кислоту щёлочью и наоборот.</strong> Экзотермическая реакция — дополнительный ожог.<br><br>
+<strong>Правило одно:</strong> обильное промывание водой.<br>
+— Кислота: 20–30 минут<br>
+— Щёлочь: 30–60 минут (проникает глубже, действует дольше)<br><br>
+<strong>Негашёная известь:</strong> сначала СУХО смети, потом промывай.<br><br>
+<strong>Проглатывание:</strong> НЕ вызывай рвоту (повторный ожог пищевода). Воды/молока до 200 мл. Сохрани упаковку.`},
+
+        {type:"warn", title:"Электротравма — ток отключён?",
+         body:`<strong>Снаружи минимально — внутри катастрофа.</strong> Ток идёт по нервам и сосудам.<br><br>
+<strong>Не трогай пострадавшего пока ток не отключён.</strong> Выключи рубильник / выдерни вилку.<br><br>
+Высоковольтная линия: <strong>минимум 10 метров</strong>, только 112.<br><br>
+<strong>Всегда госпитализация</strong> даже при хорошем состоянии — аритмия развивается через часы.`},
+
+        {type:"normal", title:"Угарный газ и отморожение",
+         body:`<strong>CO (угарный газ):</strong> без запаха и цвета. Источники: неисправная колонка, пожар в закрытом пространстве, гараж. Задержи дыхание при входе → вынеси на воздух → 112.<br><br>
+<strong>Отморожение:</strong><br>
+— НЕ растирать — кристаллы льда разрушают клетки<br>
+— НЕ греть у огня/батареи — неравномерный нагрев<br>
+— Тёплая вода <strong>37–39°C</strong>, 20–30 мин<br>
+— НЕ согревать если возможно повторное замерзание — лучше оставить замороженным`},
+    ],
+    quiz:[
+        {q:"Ожог охлаждать:",o:["Льдом 5 мин","Прохладной водой 15–20°C не менее 20 мин","Маслом или сметаной"],c:1},
+        {q:"Химический ожог — нейтрализовать кислоту щёлочью:",o:["Да — быстро нейтрализует","Нет — экзотермическая реакция усиливает ожог","Только при слабых кислотах"],c:1},
+        {q:"При отморожении:",o:["Растирать снегом для восстановления кровообращения","Тёплая вода 37–39°C. НЕ растирать!","Горячая ванна"],c:1},
+    ]
+},
+{
+    id:8, title:"Командир ситуации",
+    sub:"Эффект свидетеля · Формула команды · Роли · Голос лидера",
+    blocks:[
+        {type:"normal", title:"Эффект свидетеля — почему никто не помогает",
+         body:`В экстренной ситуации большинство людей просто стоит и смотрит. Это не равнодушие — это <strong>эффект свидетеля (Bystander Effect)</strong>.<br><br>
+Механизм прост: чем больше людей вокруг, тем ниже вероятность что кто-то поможет. Каждый думает: «Здесь много народу, кто-то обязательно врач — он и спасёт». В итоге не делает никто.<br><br>
+Толпа заражается <strong>социальным доказательством</strong>: «Все стоят и ничего не делают — значит, так и надо».<br><br>
+Как только один человек (ты) начинает действовать уверенно — толпа мгновенно делает его лидером и готова подчиняться. Ты становишься <strong>«внешним мозгом»</strong> для тех, кто в ступоре. Их префронтальная кора отключена — твоя задача взять управление снаружи.`},
+
+        {type:"key", title:"Формула команды: КТО + ЧТО + ПОДТВЕРЖДЕНИЕ",
+         body:`Паникующий мозг не воспринимает абстрактные призывы. Крик <em>«Кто-нибудь вызовите скорую!»</em> уходит в пустоту — каждый думает, что ты обращаешься к кому-то другому.<br><br>
+<strong>Три элемента правильной команды:</strong><br><br>
+<strong>1. КТО — визуальный маркер.</strong> Укажи пальцем на конкретного человека, назови очевидный признак.<br>
+→ «Ты, мужчина в синей куртке!»<br><br>
+<strong>2. ЧТО — простое действие.</strong> Команда из 2–3 слов. Без сложных инструкций.<br>
+→ «Звони 112!» · «Найди аптечку!» · «Встань здесь!»<br><br>
+<strong>3. ПОДТВЕРЖДЕНИЕ — доклад.</strong> Требуй обратную связь, иначе человек «зависнет» с телефоном в руке.<br>
+→ «Скажи им: ДТП, двое тяжёлых. Потом доложи мне что они ответили!»<br><br>
+<em>Пример: «Ты, девушка в красном шарфе — звони 112, скажи остановка сердца, жду доклад. Ты, парень с рюкзаком — иди к дороге, останови машину, нужна аптечка».</em>`},
+
+        {type:"key", title:"Четыре роли для немедленного назначения",
+         body:`Тебе нужны свободные руки для алгоритмов (CPR, остановка крови). Раздай роли сразу — люди в ступоре <em>хотят</em> быть полезными, им нужна цель.<br><br>
+<strong>🔵 Связист</strong> — звонит 112, не вешает трубку, докладывает тебе. Освобождает тебя от телефона полностью.<br><br>
+<strong>🟡 Снабженец</strong> — ищет AED (дефибриллятор), аптечку (в машинах, в магазине рядом), чистую ткань, воду.<br><br>
+<strong>🟢 Щит (2–3 человека)</strong> — расчищают пространство, никого не пускают в круг. Команда: «Вы двое — встаньте здесь, держите периметр, мне нужно место для реанимации». Роль «охранника» снижает их собственную панику.<br><br>
+<strong>⚪ Ассистент</strong> — держит голову (при подозрении на травму шеи), пережимает рану руками пока ты накладываешь жгут, считает компрессии CPR вслух.`},
+
+        {type:"warn", title:"Голос и тело командира — как говорить",
+         body:`<strong>Паника заразна. Уверенность заразна ещё больше.</strong><br><br>
+<strong>Тембр — низкий, грудной.</strong> Высокий писклявый крик срывается в истерику и усиливает панику вокруг. Низкий голос на инстинктивном уровне воспринимается как голос лидера. Дыши животом перед тем как говорить.<br><br>
+<strong>Темп — замедли на 20%.</strong> Быстрая тараторка выдаёт твою тревогу. Говори весомо, делая паузы между командами.<br><br>
+<strong>Зрительный контакт — прямой.</strong> Смотри в глаза тому кому отдаёшь команду. Не отводи взгляд пока он не кивнул и не начал действовать.<br><br>
+<strong>Внешнее спокойствие.</strong> Даже если кровь бьёт фонтаном — ты должен выглядеть как человек который просто делает свою работу. Твоя холодность станет якорем для всех остальных.<br><br>
+<em>Помни: ты не просишь о помощи. Ты отдаёшь приказы. Это не грубость — это спасение жизни.</em>`},
+    ],
+    quiz:[
+        {q:"Почему в толпе никто не спешит помогать?",o:["Люди стали жестокими и равнодушными","Эффект свидетеля — каждый думает кто-то другой поможет, а мозг в ступоре","Они заняты съёмкой на телефон"],c:1},
+        {q:"Ты начинаешь реанимацию. Вокруг 10 человек. Как правильно попросить вызвать скорую?",o:["Громко крикнуть: «Кто-нибудь, срочно вызовите скорую!»","Посмотреть на конкретного: «Ты, в красной куртке — звони 112, скажи остановка сердца, жду доклад»","Достать телефон самому и звонить по громкой во время реанимации"],c:1},
+        {q:"Какой голос лучше всего выводит людей из паники?",o:["Очень громкий и быстрый крик, чтобы перекричать шум","Ласковый и тихий, чтобы успокоить","Низкий (грудной), медленный и авторитетный — без истерики"],c:2},
+    ]
+},
+{
+    id:9, title:"Аптечка и снаряжение",
+    sub:"Что иметь при себе · Дома · В машине · Как собрать",
+    blocks:[
+        {type:"warn", title:"Почему большинство аптечек бесполезны",
+         body:`Стандартная аптечка из аптеки — это юридический артефакт, а не инструмент спасения жизни.<br><br>
+В ней есть: зелёнка, вата, бинт, активированный уголь, нашатырный спирт. Ничего из этого не остановит артериальное кровотечение, не поможет при остановке сердца, не защитит при химическом ожоге.<br><br>
+<strong>Главный принцип:</strong> аптечка должна закрывать три угрозы, от которых умирают в первые минуты: кровотечение, остановка дыхания/сердца, тяжёлая аллергия.<br><br>
+<strong>Три уровня готовности:</strong><br>
+— <strong>Личная (EDC)</strong> — всегда в кармане/сумке<br>
+— <strong>Домашняя</strong> — расширенный набор<br>
+— <strong>Машинная</strong> — дублирует домашнюю, рассчитана на ДТП`},
+
+        {type:"key", title:"Личная аптечка (EDC — Every Day Carry)",
+         body:`Умещается в кармане или небольшом чехле. Закрывает угрозы которые могут случиться в любом месте.<br><br>
+<strong>Минимум:</strong><br>
+□ Нитриловые перчатки × 2 пары (без них не трогай ничего)<br>
+□ Жгут CAT или SOFTT-W (не аналог — оригинал)<br>
+□ Малый перевязочный пакет (МПП)<br>
+□ CPR face shield (маска для искусственного дыхания)<br>
+□ Постоянный маркер (записать время жгута)<br><br>
+<strong>Если хочешь расширить:</strong><br>
+□ Гемостатический бинт (QuikClot, Celox) — останавливает кровь за 3 мин<br>
+□ Окклюзионная пломба (Hyfin, FOXSEAL) — ранение груди<br>
+□ Термоодеяло (складывается до размера ладони)<br><br>
+<em>Всё это весит меньше 300 граммов и умещается в чехол размером с телефон.</em>`},
+
+        {type:"normal", title:"Домашняя и машинная аптечка",
+         body:`<strong>Домашняя — полный набор:</strong><br>
+□ Жгут CAT + израильский бандаж (Emergency Bandage)<br>
+□ Гемостатическая марля QuikClot или Celox<br>
+□ Перчатки нитриловые × 5 пар<br>
+□ Ножницы травматические (разрезают одежду и ремни)<br>
+□ Бинт эластичный 5 м × 2 + стерильный тампон × 5<br>
+□ Пищевая плёнка (ожоги, окклюзия)<br>
+□ Термоодеяло (space blanket)<br>
+□ Аспирин 500 мг × 2 (инфаркт)<br>
+□ Маркер постоянный<br>
+□ CPR маска (pocket mask)<br>
+□ Фонарик<br><br>
+<strong>Машинная — упор на ДТП:</strong><br>
+Всё из домашней + аварийный молоток (разбить стекло + обрезать ремень) + светоотражающий жилет + сигнальный конус.<br><br>
+<em>Аптечка в машине должна лежать в пределах досягаемости с водительского сиденья — не в багажнике.</em>`},
+
+        {type:"normal", title:"Как выбирать, хранить и проверять",
+         body:`<strong>Жгут:</strong> только CAT (Combat Application Tourniquet) или SOFTT-W. Дешёвые аналоги рвутся при затягивании. Проверяй ворот раз в 3 месяца — он должен крутиться без заеданий.<br><br>
+<strong>Гемостатики:</strong> срок годности 3–5 лет. Хранить в сухом месте, не на солнце. QuikClot Z-Fold удобнее для тампонады — уже сложен гармошкой.<br><br>
+<strong>Перчатки:</strong> нитрил лучше латекса (нет аллергии, прочнее). Держать вне упаковки — быстрее достать. Проверяй раз в год — резина рассыхается.<br><br>
+<strong>Ревизия аптечки:</strong> каждые 6 месяцев — проверь сроки годности, замени использованное, обнови израсходованное.<br><br>
+<strong>Где купить:</strong> жгут и гемостатики — в военторгах, специализированных тактических магазинах или онлайн (Ozon, Rozetka). Остерегайся фейков CAT — на оригинале есть маркировка «C-A-T» и серийный номер.<br><br>
+<em>Аптечка без тренировки — просто набор незнакомых предметов. Знание без снаряжения — беспомощность. Нужно и то, и другое.</em>`},
+
+        {type:"key", title:"📅 ПЛАН ЗАКРЕПЛЕНИЯ: 20 повторений",
+         body:`<strong>Нейронная связь формируется за ~20 повторений с интервалами.</strong> Без интервалов — 50+ повторений.<br><br>
+<strong>НЕДЕЛЯ 1:</strong><br>
+• День 1-2: Пройти протокол 3 раза<br>
+• День 3-4: Пройти 1 раз + тест<br>
+• День 5-7: Пройти 1 раз в стрессе*<br><br>
+<strong>НЕДЕЛЯ 2:</strong><br>
+• День 1-3: Тренажёр (5 вопросов)<br>
+• День 4-7: Сценарий (1 раз)<br><br>
+<strong>НЕДЕЛЯ 3:</strong><br>
+• День 1-7: Тренажёр (1 раз в неделю)<br><br>
+<em>* В стрессе = после приседаний, холодной воды, или задержки дыхания. Это учит применять навык под нагрузкой.</em>`},
+
+        {type:"warn", title:"🦸 ТВОЙ ПУТЬ ГЕРОЯ: было → станет",
+         body:`<strong>БЫЛО:</strong><br>
+• Паника управляет тобой<br>
+• Замираешь в стрессе<br>
+• Агрессия контролирует решения<br>
+• Перегруз → бездействие<br><br>
+<strong>СТАНЕТ:</strong><br>
+• Ты управляешь паникой за 30 сек (Протокол СТОП)<br>
+• Выходишь из замирания за 1 мин (Разморозка)<br>
+• Выбираешь ответ вместо реакции (Дистанция)<br>
+• Действуешь под давлением (Пауза)<br><br>
+<strong>ТРАНСФОРМАЦИЯ:</strong><br>
+«Из жертвы обстоятельств → в автора своих реакций»<br><br>
+<em>Это не исчезнет за 1 день. Будут откаты. Но 20 повторений — твой минимум.</em>`},
+    ],
+    quiz:[
+        {q:"Что главное в личной аптечке EDC для закрытия угрозы кровотечения?",o:["Бинт и зелёнка из аптеки","Жгут CAT или SOFTT-W + нитриловые перчатки","Вата и лейкопластырь"],c:1},
+        {q:"Где в машине должна лежать аптечка?",o:["В багажнике в специальном отсеке","В пределах досягаемости с водительского сиденья","На задних сиденьях"],c:1},
+        {q:"Как часто нужно делать ревизию аптечки?",o:["Раз в 5 лет при истечении срока","Каждые 6 месяцев: сроки годности, замена использованного","Только после использования"],c:1},
+    ]
+},
+];
+
+// ── STICKY BACK BAR ──
+function updateBackBar(show, label){
+    const bar = document.getElementById('back-bar');
+    const btn = document.getElementById('back-bar-btn');
+    if(show){ bar.classList.remove('hidden'); btn.innerText = '← ' + (label||'Назад'); }
+    else bar.classList.add('hidden');
+}
+
+function stickyBack(){
+    // delegate to the correct back function based on current visible view
+    if(!document.getElementById('v-scene').classList.contains('hidden'))     goHome();
+    else if(!document.getElementById('cl-reader').classList.contains('hidden')) courseBack();
+    else if(!document.getElementById('cl-test').classList.contains('hidden'))   courseBack();
+    else if(!document.getElementById('course-detail').classList.contains('hidden')) courseBack();
+    else goHome();
+}
+// ══════════════════════════════════════════════════════
+const TASKS={
+'0_0':'Вспомни момент когда ты растерялся или «завис» в стрессе. Запиши или проговори вслух: что произошло, и почему это была нормальная реакция мозга — а не твоя слабость.',
+'0_1':'Выполни 3 полных цикла боевого дыхания прямо сейчас: вдох 4 сек — пауза 4 — выдох 4 — пауза 4. Итого ~1 минута. Запомни ощущение. Поставь напоминание на завтра утром: «дыхание 4-4-4-4».',
+'0_2':'Скажи вслух три раза с паузой: «СТОП. Что сейчас важно?» Почувствуй переключение. Затем назови вслух 3 предмета перед собой — это заземление. Запомни как это работает на теле.',
+'0_3':'Придумай именное поручение для трёх мест где ты бываешь (дом, работа, кафе). Пример: «Ты в синей куртке — звони 112, ты с рюкзаком — удерживай его голову». Произнеси вслух.',
+'1_0':'Прямо сейчас осмотри комнату где ты находишься. Пройди по СБЕРУ вслух: сцена, биоугроза, жертвы, ресурсы, угрозы. Где потенциальная опасность? Запомни: в каждом новом месте — 5-секундный СБЕРУ.',
+'1_1':'Ляг на пол или попроси кого-то. Пройди алгоритм ABCDE вслух, называя каждый шаг и что проверяешь. Сделай 3 раза — это создаёт паттерн в памяти.',
+'1_2':'Отработай стабильное боковое положение на диване или с подушкой. 5 повторений. Цель: менее 20 секунд от начала до готовой позиции с контролем дыхания.',
+'1_3':'Проговори вслух все 6 шагов звонка 112, придумав конкретный сценарий: «Меня зовут [имя], на [адрес] мужчина 50 лет без сознания, не дышит, я начал CPR».',
+'2_0':'Встань у дивана. Имитируй начало CPR вслух: «ТЫ — звони 112, ТЫ — найди AED». Запрокинь голову воображаемому пострадавшему, отсчитай 30 компрессий в темпе Stayin\' Alive.',
+'2_1':'Сделай 30 компрессий на подушке и засеки время — должно быть 15–18 секунд. Проверь: ты давишь на 5–6 см, руки прямые, работаешь весом тела, а не только руками.',
+'2_2':'Найди ближайший AED в своём районе (Google Карты → «дефибриллятор»). Запомни адрес. Если есть AED на работе — проверь прямо сегодня где он лежит и как открыть корпус.',
+'2_3':'Мысленно пройди сценарий: ребёнок 3 лет не дышит. Вслух: «5 спасательных вдохов — 30 компрессий 2 пальцами — глубина 5 см — темп 100». Повтори 3 раза.',
+'3_0':'Засеки 3 минуты на телефоне. Просто почувствуй сколько это — ровно за это время человек умирает от артериального кровотечения. Это переключает мозг с паники на скорость.',
+'3_1':'Если есть жгут — наложи на бедро поверх одежды прямо сейчас. Засеки время. Цель: менее 30 секунд. Если жгута нет — запланируй купить CAT или SOFTT-W на этой неделе.',
+'3_2':'Возьми старую майку, скомкай — «марля». Возьми банку — «рана». Тренируй движение вглубь к источнику: заталкивай на дно, не клади сверху. 10 повторений.',
+'3_3':'Проговори вслух признаки геморрагического шока: бледный, холодный, слабый пульс, жажда, тревога. Затем действия: горизонтально, ноги 15–30 см вверх, не давать пить, согреть, 112.',
+'4_0':'Изобрази жест удушья: схватись за горло обеими руками. Почувствуй как выглядит сигнал бедствия. Как ты сам подашь этот сигнал если подавишься в одиночестве — это важный вопрос.',
+'4_1':'Встань и найди правильное положение для Геймлиха: кулак (большой палец к телу) выше пупка ниже грудины, накрой второй рукой. Отработай 5 имитационных толчков вверх-на-себя.',
+'4_2':'Возьми маленькую подушку — имитируй младенца. Отработай переворот лицом вниз на предплечье (голова ниже тела) и обратно лицом вверх. Уверенное держание — моторная память.',
+'4_3':'Подойди к углу стола или спинке стула. Почувствуй точку прижатия для самостоятельного Геймлиха — живот на угол, резкое движение. Это может спасти жизнь когда ты один.',
+'5_0':'Запомни «светлый промежуток»: пришёл в себя → через 30–60 мин снова потерял сознание = эпидуральная гематома, нейрохирургия срочно. Проговори вслух 3 раза.',
+'5_1':'Попроси кого-то лечь. Встань за головой. Обхвати с боков, нейтральная позиция, лёгкое вытяжение вверх. Удерживай 2 минуты — почувствуй что это физически непросто.',
+'5_2':'Найди дома предметы для импровизированной шины (доска, линейка, зонт). Наложи на руку, зафиксируй бинтом. Убедись что захватывает сустав выше И ниже воображаемого перелома.',
+'5_3':'Запомни три «НЕ» при ране живота: не вправлять, не извлекать предмет, не давать есть/пить. Проговори вслух: «накрываю — фиксирую — ноги согнуты — 112».',
+'6_0':'Прямо сейчас отработай BE-FAST на другом человеке: «Улыбнись — подними обе руки — скажи "небо в алмазах"». Засеки: 15 секунд. Это может спасти мозг.',
+'6_1':'Запомни атипичные признаки инфаркта: у женщин/пожилых — только слабость, только одышка, только боль в животе без боли в груди. Вслух: «При малейшем подозрении — 112 первым».',
+'6_2':'Найди и прочитай инструкцию к EpiPen (аптека или онлайн). Если у тебя или близких аллергия — узнай прямо сегодня: есть ли EpiPen дома и где лежит.',
+'6_3':'Запомни три мифа о судорогах: язык не западает, удерживать нельзя, ложку в рот нельзя. Проговори вслух правильные действия: засечь время, убрать острое, подложить мягкое.',
+'7_0':'Найди дома пищевую плёнку и положи в аптечку прямо сейчас. Запомни жёстко: НЕ лёд, НЕ масло, НЕ сметана — прохладная вода 20 мин + плёнка.',
+'7_1':'Засеки 20 минут на телефоне прямо сейчас. Пока идёт — найди ближайший источник прохладной воды (кран, душ). Почувствуй как долго 20 минут.',
+'7_2':'Найди источники угарного газа в своём доме (газовая плита, колонка). Есть ли CO-детектор? Если нет — запланируй купить.',
+'7_3':'Найди главный рубильник/автомат в своём доме прямо сейчас. Убедись что умеешь быстро отключить электричество — это первый шаг при электротравме.',
+'8_0':'Вспомни любую ситуацию где кто-то нуждался в помощи, а вокруг стояла толпа. Вслух проанализируй: был ли там эффект свидетеля? Что нужно было сделать чтобы разорвать его? Что конкретно ты скажешь в следующий раз первым словом?',
+'8_1':'Встань перед зеркалом или скажи кому-то рядом используя Формулу команды прямо сейчас: «Ты, [визуальный маркер] — [простое действие] — [требование доклада]». Например: «Ты, в белой майке — иди на кухню, принеси воду — потом скажи мне сколько там стаканов». Почувствуй разницу в реакции когда есть все три элемента.',
+'8_2':'Представь что ты оказался на месте ДТП. Вслух распредели роли для воображаемых 4 человек вокруг: назначь Связиста, Снабженца, Щит и Ассистента. Используй Формулу команды для каждого. Засеки сколько времени занимает раздача всех ролей — цель: менее 30 секунд.',
+'8_3':'Запиши или запомни одну фразу которую будешь говорить в ЧС первой — она должна захватить внимание толпы. Потренируй произносить её низким спокойным голосом, медленно, с паузами. Пример: «Всем отойти. Я знаю что делать. Мне нужна ваша помощь.»',
+'9_0':'Прямо сейчас возьми свою аптечку (домашнюю или из машины) и проверь: есть ли там жгут, гемостатик, нитриловые перчатки? Если нет хотя бы одного — запланируй купить на этой неделе. Запиши конкретно: что, где, когда.',
+'9_1':'Собери личную аптечку EDC. Минимум: перчатки × 2 пары + жгут. Положи в сумку или карман прямо сейчас. Если жгута нет — закажи сегодня. Пока ждёшь доставки — носи хотя бы перчатки.',
+'9_2':'Сядь в машину. Не выходя — дотянись до аптечки. Если не можешь достать с водительского сиденья — переложи её в более доступное место прямо сейчас. Открой аптечку, проверь что там есть, проверь сроки на всём что имеет срок годности.',
+'9_3':'Поставь напоминание в телефон: «Ревизия аптечки» на 6 месяцев вперёд. Затем проверь жгут: ворот должен крутиться без заеданий, липучки — держать надёжно. Если есть сомнения в качестве — это повод купить оригинальный CAT.',
+};
+
+// ══════════════════════════════════════════════════════
+//  COURSE PROGRESS (localStorage)
+// ══════════════════════════════════════════════════════
+const PROG_KEY='aidcmd_v3_prog';
+let _prog={}, _curMod=null, _curLesson=0, _modQ={};
+function loadProg(){ try{_prog=JSON.parse(localStorage.getItem(PROG_KEY)||'{}');}catch(e){_prog={};} }
+function saveProg(){ localStorage.setItem(PROG_KEY,JSON.stringify(_prog)); }
+function modProg(mid){ if(!_prog[mid]) _prog[mid]={lessons:{},done:false}; return _prog[mid]; }
+function isLessonDone(mid,idx){ return !!(modProg(mid).lessons[idx]); }
+function isModDone(mid){ return !!(modProg(mid).done); }
+function allLessonsDone(mid){ const m=COURSE.find(x=>x.id===mid); return m&&m.blocks.every((_,i)=>isLessonDone(mid,i)); }
+
+// ── RENDER MODULE LIST ──
+function renderCourse(){
+    loadProg();
+    const el=document.getElementById('mod-list'); el.innerHTML='';
+    let doneCount=0;
+    COURSE.forEach(mod=>{
+        const done=isModDone(mod.id); if(done) doneCount++;
+        const total=mod.blocks.length;
+        const lessDone=Object.values(modProg(mod.id).lessons).filter(Boolean).length;
+        const pct=Math.round(lessDone/total*100);
+        const d=document.createElement('div');
+        d.className='mod-card'+(done?' done':'');
+        d.onclick=()=>openModDetail(mod.id);
+        d.innerHTML=`
+            <div class="mod-num">${done?'✓':mod.id}</div>
+            <div class="mod-info">
+                <div class="mod-card-title">Модуль ${mod.id}: ${mod.title}</div>
+                <div class="mod-card-sub">${done?'✅ Завершён':lessDone>0?`${lessDone}/${total} уроков · ${pct}%`:`${total} уроков`}</div>
+            </div>
+            <div class="mod-status" style="color:var(--sec);font-size:18px">${done?'':'›'}</div>`;
+        el.appendChild(d);
+    });
+    const pct=Math.round(doneCount/COURSE.length*100);
+    document.getElementById('prog-label').innerText=`${doneCount} из ${COURSE.length} модулей завершено`;
+    document.getElementById('prog-pct').innerText=pct+'%';
+    document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+// ── OPEN MODULE ──
+function openModDetail(mid){
+    _curMod=mid; loadProg();
+    const mod=COURSE.find(m=>m.id===mid);
+    ['cl-reader','cl-test'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById('cl-lessons').classList.remove('hidden');
+    document.getElementById('course-list').classList.add('hidden');
+    document.getElementById('course-detail').classList.remove('hidden');
+    document.getElementById('btn-back-detail').innerText='← К СПИСКУ';
+    document.getElementById('cl-mod-num').innerText=`Модуль ${mid}`;
+    document.getElementById('cl-mod-title').innerText=mod.title;
+    document.getElementById('cl-mod-sub').innerText=mod.sub;
+    updateBackBar(true, 'К списку');
+    renderLessonList(mid); window.scrollTo(0,0);
+    pushNav('mod-'+mid);
+}
+
+function renderLessonList(mid){
+    const mod=COURSE.find(m=>m.id===mid);
+    const c=document.getElementById('cl-lesson-list'); c.innerHTML='';
+    mod.blocks.forEach((block,idx)=>{
+        const done=isLessonDone(mid,idx);
+        const d=document.createElement('div');
+        d.className='lesson-list-item'+(done?' ll-done':'');
+        d.onclick=()=>openLesson(mid,idx);
+        d.innerHTML=`
+            <div class="ll-num">${done?'✓':(idx+1)}</div>
+            <div class="ll-body">
+                <div class="ll-title">${block.title}</div>
+                <div class="ll-status">${done?'✓ Пройден':'Не пройден'}</div>
+            </div>
+            <div style="color:var(--sec);font-size:18px">${done?'':'›'}</div>`;
+        c.appendChild(d);
+    });
+    const allDone=allLessonsDone(mid), modDone=isModDone(mid);
+    document.getElementById('cl-test-unlock').classList.toggle('hidden',!allDone||modDone);
+    document.getElementById('cl-mod-done-msg').classList.toggle('hidden',!modDone);
+}
+
+// ── OPEN LESSON ──
+function openLesson(mid,idx){
+    _curMod=mid; _curLesson=idx; loadProg();
+    const mod=COURSE.find(m=>m.id===mid);
+    const block=mod.blocks[idx];
+    const total=mod.blocks.length;
+    const taskKey=`${mid}_${idx}`;
+    const alreadyDone=isLessonDone(mid,idx);
+
+    document.getElementById('cl-lessons').classList.add('hidden');
+    document.getElementById('cl-test').classList.add('hidden');
+    document.getElementById('cl-reader').classList.remove('hidden');
+    document.getElementById('btn-back-detail').innerText=`← ${mod.title}`;
+    updateBackBar(true, mod.title);
+    pushNav('lesson-'+mid+'-'+idx);
+    const pager=document.getElementById('cl-pager'); pager.innerHTML='';
+    mod.blocks.forEach((_,i)=>{
+        const dot=document.createElement('div');
+        dot.className='lp-dot'+(isLessonDone(mid,i)?' lp-done':i===idx?' lp-active':'');
+        pager.appendChild(dot);
+    });
+
+    document.getElementById('cl-lesson-kicker').innerText=`Модуль ${mid} · Урок ${idx+1} из ${total}`;
+    document.getElementById('cl-lesson-title').innerText=block.title;
+
+    const typeClass=block.type==='warn'?'warn-block':block.type==='key'?'key-block':'';
+    document.getElementById('cl-lesson-body').innerHTML=`
+        <div class="th-block ${typeClass}">
+            <div class="th-block-title">${block.title}</div>
+            <div class="th-block-body">${block.body}</div>
+        </div>`;
+
+    // task
+    const taskTxt=TASKS[taskKey];
+    const taskBox=document.getElementById('cl-task-box');
+    if(taskTxt){
+        taskBox.classList.remove('hidden');
+        document.getElementById('cl-task-txt').innerHTML=taskTxt;
+        document.getElementById('cl-task-badge').classList.toggle('hidden',!alreadyDone);
+        document.getElementById('btn-task-check').classList.toggle('hidden',!!alreadyDone);
+    } else { taskBox.classList.add('hidden'); }
+
+    // nav
+    const foot=document.getElementById('cl-lesson-foot');
+    const isLast=idx===total-1;
+    foot.className=idx===0?'lesson-foot solo':'lesson-foot';
+    document.getElementById('btn-lesson-prev').classList.toggle('hidden',idx===0);
+    const nextBtn=document.getElementById('btn-lesson-next');
+    const doneBtn=document.getElementById('btn-lesson-done');
+    if(isLast){
+        nextBtn.classList.add('hidden'); doneBtn.classList.remove('hidden');
+        if(alreadyDone){ doneBtn.innerText='✓ УРОК УЖЕ ПРОЙДЕН'; doneBtn.className='btn btn-ghost'; }
+        else{ doneBtn.innerText='✓ ЗАВЕРШИТЬ УРОК'; doneBtn.className='btn btn-green'; }
+    } else {
+        nextBtn.classList.remove('hidden'); doneBtn.classList.add('hidden');
+    }
+    window.scrollTo(0,0);
+}
+
+function navLesson(dir){
+    const mod=COURSE.find(m=>m.id===_curMod);
+    if(dir>0) markLessonDone(_curMod,_curLesson);
+    const newIdx=_curLesson+dir;
+    if(newIdx>=0&&newIdx<mod.blocks.length) openLesson(_curMod,newIdx);
+}
+
+function markTaskDone(){
+    document.getElementById('cl-task-badge').classList.remove('hidden');
+    document.getElementById('btn-task-check').classList.add('hidden');
+}
+
+function completeLesson(){
+    markLessonDone(_curMod,_curLesson);
+    document.getElementById('cl-reader').classList.add('hidden');
+    document.getElementById('cl-lessons').classList.remove('hidden');
+    document.getElementById('btn-back-detail').innerText='← К СПИСКУ';
+    renderLessonList(_curMod);
+    const mod=COURSE.find(m=>m.id===_curMod);
+    const nextIdx=_curLesson+1;
+    if(nextIdx<mod.blocks.length) setTimeout(()=>openLesson(_curMod,nextIdx),350);
+    window.scrollTo(0,0);
+}
+
+function markLessonDone(mid,idx){
+    const p=modProg(mid);
+    if(!p.lessons[idx]){ p.lessons[idx]=true; saveProg(); }
+}
+
+// ── MODULE TEST ──
+function openModTest(){
+    _modQ={};
+    const mod=COURSE.find(m=>m.id===_curMod);
+    document.getElementById('cl-lessons').classList.add('hidden');
+    document.getElementById('cl-reader').classList.add('hidden');
+    document.getElementById('cl-test').classList.remove('hidden');
+    document.getElementById('btn-back-detail').innerText=`← ${mod.title}`;
+    updateBackBar(true, mod.title);
+    pushNav('test-'+_curMod);
+    document.getElementById('cl-test-kicker').innerText=`Модуль ${_curMod} · Финальный тест`;
+    document.getElementById('cl-test-title').innerText=`Тест: ${mod.title}`;
+    const c=document.getElementById('cl-test-questions'); c.innerHTML='';
+    document.getElementById('cl-test-result').classList.add('hidden');
+    document.getElementById('btn-test-retry').classList.add('hidden');
+    document.getElementById('btn-test-pass').classList.add('hidden');
+    mod.quiz.forEach((q,qi)=>renderModQ(q,qi,c));
+    window.scrollTo(0,0);
+}
+
+function renderModQ(q,qi,container){
+    const wrap=document.createElement('div'); wrap.className='mod-quiz-q';
+    const lbl=document.createElement('div'); lbl.className='mod-quiz-label';
+    lbl.innerText=(qi+1)+'. '+q.q; wrap.appendChild(lbl);
+    q.o.forEach((opt,oi)=>{
+        const d=document.createElement('div'); d.className='mod-quiz-opt';
+        d.innerText=opt; d.id=`mqo-${qi}-${oi}`;
+        d.onclick=()=>answerModQ(qi,oi,q.c,wrap); wrap.appendChild(d);
+    });
+    const fb=document.createElement('div'); fb.id=`mqfb-${qi}`;
+    fb.style.cssText='font-size:13px;font-weight:700;min-height:18px;margin-top:4px';
+    wrap.appendChild(fb); container.appendChild(wrap);
+}
+
+function answerModQ(qi,oi,correct,wrap){
+    _modQ[qi]=oi===correct;
+    wrap.querySelectorAll('.mod-quiz-opt').forEach(o=>o.classList.add('disabled'));
+    const mod=COURSE.find(m=>m.id===_curMod);
+    document.getElementById(`mqo-${qi}-${correct}`).classList.add('correct');
+    if(oi!==correct) document.getElementById(`mqo-${qi}-${oi}`).classList.add('wrong');
+    const fb=document.getElementById(`mqfb-${qi}`);
+    if(oi===correct){fb.innerText='✓ Верно';fb.style.color='var(--green)';}
+    else{fb.innerText='✗ Неверно';fb.style.color='var(--red)';}
+    if(Object.keys(_modQ).length===mod.quiz.length){
+        const score=Object.values(_modQ).filter(Boolean).length;
+        const pass=score===mod.quiz.length;
+        const res=document.getElementById('cl-test-result');
+        res.classList.remove('hidden');
+        res.className='quiz-result-bar '+(pass?'pass':'fail');
+        if(pass){ res.innerText=`✅ ${score}/${mod.quiz.length} — Отлично!`; document.getElementById('btn-test-pass').classList.remove('hidden'); }
+        else{ res.innerText=`${score}/${mod.quiz.length} — Не все верно. Повтори уроки.`; document.getElementById('btn-test-retry').classList.remove('hidden'); }
+    }
+}
+
+function markModDone(){
+    modProg(_curMod).done=true; saveProg();
+    document.getElementById('btn-test-pass').classList.add('hidden');
+    document.getElementById('cl-test').classList.add('hidden');
+    document.getElementById('cl-lessons').classList.remove('hidden');
+    renderLessonList(_curMod);
+    setTimeout(()=>closeModDetail(),1200);
+}
+
+function closeModDetail(){
+    document.getElementById('course-detail').classList.add('hidden');
+    document.getElementById('course-list').classList.remove('hidden');
+    updateBackBar(false);
+    renderCourse(); window.scrollTo(0,0);
+}
+
+function courseBack(){
+    if(!document.getElementById('cl-reader').classList.contains('hidden')){
+        document.getElementById('cl-reader').classList.add('hidden');
+        document.getElementById('cl-lessons').classList.remove('hidden');
+        document.getElementById('btn-back-detail').innerText='← К СПИСКУ';
+        updateBackBar(true, 'К списку');
+        renderLessonList(_curMod);
+    } else if(!document.getElementById('cl-test').classList.contains('hidden')){
+        document.getElementById('cl-test').classList.add('hidden');
+        document.getElementById('cl-lessons').classList.remove('hidden');
+        document.getElementById('btn-back-detail').innerText='← К СПИСКУ';
+        updateBackBar(true, 'К списку');
+    } else { closeModDetail(); }
+    window.scrollTo(0,0);
+}
+
+function resetProgress(){ if(confirm('Сбросить весь прогресс курса?')){ localStorage.removeItem(PROG_KEY); _prog={}; renderCourse(); } }
+function updateProgressBar(){ renderCourse(); }
+function renderTheory(){ loadProg(); renderCourse(); }
+
+// ══════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════
+function startQuiz(){
+    const rnd=Q[Math.floor(Math.random()*Q.length)];
+    document.getElementById('quiz-body').classList.remove('hidden');
+    document.getElementById('q-next').classList.add('hidden');
+    document.getElementById('q-fb').innerText='';
+    document.getElementById('q-opts').innerHTML='';
+    document.getElementById('q-next').innerText='СЛЕДУЮЩИЙ ВОПРОС';
+    document.getElementById('q-txt').innerText=rnd.q;
+    rnd.o.forEach((opt,idx)=>{
+        const d=document.createElement('div');
+        d.className='quiz-opt';
+        d.innerText=opt;
+        d.onclick=()=>{
+            document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=null);
+            const fb=document.getElementById('q-fb');
+            if(idx===rnd.c){
+                d.classList.add('correct');
+                fb.innerText='✅ ВЕРНО. Протокол усвоен.';
+                fb.style.color='var(--green)';
+                if(navigator.vibrate)navigator.vibrate(50);
+            }else{
+                d.classList.add('wrong');
+                document.querySelectorAll('.quiz-opt')[rnd.c].classList.add('correct');
+                fb.innerText='❌ ОШИБКА. Вспомни MARCH / ABCDE.';
+                fb.style.color='var(--red)';
+                if(navigator.vibrate)navigator.vibrate([100,50,100]);
+            }
+            document.getElementById('q-next').classList.remove('hidden');
+        };
+        document.getElementById('q-opts').appendChild(d);
+    });
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+    renderHome();
+    renderTheory();
+    showPanicSelect();
+    history.replaceState('home', '');
+});
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered', reg))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
+</script>
+</body>
+</html>

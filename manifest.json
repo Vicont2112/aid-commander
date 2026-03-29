@@ -1,0 +1,18 @@
+{
+  "name": "AID COMMANDER PRO",
+  "short_name": "AID CMD",
+  "description": "Приложение для оказания первой помощи в критических ситуациях",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./aid_commander_v3.html",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
