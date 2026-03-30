@@ -115,7 +115,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);overflow-x:hi
     text-align:center;
 }
 .panic-step-hint{font-size:16px;color:#a1a1aa;margin-bottom:28px;line-height:1.7;max-width:260px}
-.panic-tap-hint{font-size:14px;color:#888890;letter-spacing:.15em;text-transform:uppercase;margin-top:16px}
+#panic-step-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 18px;line-height:1.2}
+.panic-btn-hint{font-size:13px;font-weight:600;color:#888890;letter-spacing:.02em}
+.panic-btn-action{font-size:16px;font-weight:800}
 
 /* Done screen */
 #panic-done{display:none;flex-direction:column;align-items:center;width:100%;max-width:300px}
@@ -135,6 +137,25 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);overflow-x:hi
     display:flex;justify-content:space-between;align-items:center
 }
 .hdr-title{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:1px;font-size:17px}
+
+/* ── ENTRY CHOOSER (после «открыть приложение») ── */
+#v-choose{display:flex;flex-direction:column;align-items:stretch;max-width:420px}
+.choose-kicker{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--sec);margin-bottom:8px}
+.choose-title{font-size:22px;font-weight:900;line-height:1.25;margin-bottom:8px}
+.choose-sub{font-size:15px;color:var(--sec);line-height:1.55;margin-bottom:22px}
+.choose-grid{display:flex;flex-direction:column;gap:11px;width:100%}
+.choose-btn{
+    display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+    text-align:left;padding:17px 16px;border-radius:14px;border:1px solid var(--border);
+    background:var(--card);cursor:pointer;font-family:var(--font);color:var(--txt);
+    transition:border-color .15s,transform .1s
+}
+.choose-btn:active{transform:scale(.99)}
+.choose-btn .ch-lbl{font-size:17px;font-weight:800}
+.choose-btn .ch-sub{font-size:13px;color:var(--sec);font-weight:500;line-height:1.45}
+.choose-btn.ch-theory{border-left:4px solid var(--blue)}
+.choose-btn.ch-home{border-left:4px solid var(--green)}
+.choose-btn.ch-quiz{border-left:4px solid var(--orange)}
 
 /* ── CONTAINER ── */
 .wrap{padding:14px;max-width:520px;margin:0 auto;padding-bottom:110px}
@@ -327,7 +348,6 @@ details[open] summary::after{content:'−'}
         <div class="panic-step-big" id="panic-step-txt"></div>
         <div class="panic-step-hint" id="panic-step-hint"></div>
         <button class="btn btn-ghost" id="panic-step-btn" onclick="combatNext()" style="width:100%;max-width:320px"></button>
-        <div class="panic-tap-hint">нажми когда готов</div>
     </div>
 
     <!-- ЭКРАН 3: ГОТОВО -->
@@ -357,6 +377,27 @@ details[open] summary::after{content:'−'}
     <div class="hdr-title">🛡️ AID COMMANDER</div>
     <button class="btn btn-red btn-sm" onclick="showPanic()">⚠️ ПАНИКА</button>
 </header>
+
+<!-- ─── VIEW: ENTRY CHOOSER ─── -->
+<div id="v-choose" class="wrap view hidden">
+    <div class="choose-kicker">С чего начнём</div>
+    <div class="choose-title">Куда идём</div>
+    <p class="choose-sub">Теория — уроки и модули. Сценарии — пошаговые протоколы. Тренажёр — проверка знаний.</p>
+    <div class="choose-grid">
+        <button type="button" class="choose-btn ch-theory" onclick="entryPickTheory()">
+            <span class="ch-lbl">📚 Теория</span>
+            <span class="ch-sub">Курс, модули, уроки</span>
+        </button>
+        <button type="button" class="choose-btn ch-home" onclick="entryPickScenarios()">
+            <span class="ch-lbl">🚑 Сценарии</span>
+            <span class="ch-sub">ABCDE, CPR, сценарии ЧС</span>
+        </button>
+        <button type="button" class="choose-btn ch-quiz" onclick="entryPickTrainer()">
+            <span class="ch-lbl">🎯 Тренажёр</span>
+            <span class="ch-sub">Случайный вопрос, разбор ошибок</span>
+        </button>
+    </div>
+</div>
 
 <!-- ─── VIEW: HOME ─── -->
 <div id="v-home" class="wrap view">
@@ -868,16 +909,16 @@ const COMBAT = {
     // С — Стоп, Т — Тело (вздох), О — Окружение (3 предмета), П — Поведение (шаг)
     // Физический якорь: Двойной вдох носом
     panic: [
-        {txt:'СТОП.',               hint:'Ты здесь. Всё что случилось — уже факт. Сейчас — пауза.'},
+        {txt:'СТОП',               hint:'Ты здесь. Всё что случилось — уже факт. Сейчас — пауза.'},
         {txt:'ФИЗИОЛОГИЧЕСКИЙ ВЗДОХ', hint:'Двойной вдох носом — добери ещё раз сверху. Затем медленный выдох в 2 раза длиннее.', breath:'sigh'},
-        {txt:'НАЗОВИ 3 ПРЕДМЕТА',   hint:'Вслух. Любых. Перед тобой прямо сейчас.'},
-        {txt:'СЛЕДУЮЩИЙ ШАГ.',      hint:'Одно физическое действие прямо сейчас. Надень перчатки. Встань. Скажи что-нибудь.'},
+        {txt:'НАЗОВИ 3 ПРЕДМЕТА',   hint:'Любых 3 предмета, что видишь. Вслух'},
+        {txt:'СДЕЛАЙ',             hint:'Одно физическое действие прямо сейчас: Надень перчатки. Встань. Скажи что-нибудь.'},
     ],
     // ── ПРОТОКОЛ РАЗМОРОЗКА (Замирание) — Ч-П-Н-Ш-Д ──
     // Ч — Челюсть, П — Пальцы, Н — Ноги, Ш — Шаг, Д — Действие
     // Физический якорь: Сжать/разжать кулаки 10 раз
     freeze: [
-        {txt:'СТОП.',               hint:'Ты завис. Это нормально. Мозг перегружен — переключаем через тело.'},
+        {txt:'СТОП',               hint:'Ты завис. Это нормально. Мозг перегружен — переключаем через тело.'},
         {txt:'РАЗОМКНИ ЧЕЛЮСТЬ.',   hint:'Специально. Почувствуй как напряжение уходит из лица.'},
         {txt:'СОЖМИ КУЛАКИ 10 РАЗ.', hint:'Быстро сжимай и разжимай. Запусти кровообращение.'},
         {txt:'ВСТАНЬ.',             hint:'Два шага в любую сторону. Тело включило мозг.'},
@@ -887,7 +928,7 @@ const COMBAT = {
     // К — Кулаки, В — Выдох, Ш — Шаг, В — Выбор
     // Физический якорь: Раскрыть ладони
     anger: [
-        {txt:'СТОП.',               hint:'Злость уже есть. Это факт. Что ты с ней сделаешь — твой выбор.'},
+        {txt:'СТОП',               hint:'Злость уже есть. Это факт. Что ты с ней сделаешь — твой выбор.'},
         {txt:'РАЗОЖМИ КУЛАКИ.',     hint:'Специально. Медленно. Почувствуй пальцы. Ладони открыты = ты контролируешь.'},
         {txt:'ДЛИННЫЙ ВЫДОХ.',      hint:'Через рот. Как будто задуваешь свечу. Медленно, до конца.', breath:'exhale'},
         {txt:'ОТОЙДИ НА 2 ШАГА.',  hint:'Физическая дистанция — это не слабость. Это выбор.'},
@@ -897,7 +938,7 @@ const COMBAT = {
     // С — Сядь, Д — Дыши, 3 — 3 дела, П — Первое
     // Физический якорь: Рука на живот
     over: [
-        {txt:'СТОП.',               hint:'Перегруз — не сигнал что ты не справляешься. Сигнал что нужна пауза.'},
+        {txt:'СТОП',               hint:'Перегруз — не сигнал что ты не справляешься. Сигнал что нужна пауза.'},
         {txt:'СЯДЬ И РУКУ НА ЖИВОТ.', hint:'Физически. Прямо сейчас. Почувствуй дыхание под ладонью.'},
         {txt:'ДЫШИ 4-4-4-4.',       hint:'Вдох 4 сек — пауза — выдох 4 сек — пауза.', breath:'box'},
         {txt:'НАЗОВИ 3 ДЕЛА ВСЛУХ.',hint:'Только то что реально нужно сегодня. Не всё — только три.'},
@@ -909,7 +950,7 @@ let _combatSteps = [];
 let _combatIdx   = 0;
 let _combatTimer = null;
 let _boxTick = null, _boxPhase = 0, _boxCycle = 0;
-let _sighPhase = 0, _sighTick = null;
+let _sighPhase = 0, _sighTick = null, _sighCycleCount = 0;
 
 const PHASES = [
     {name:'ВДОХ',  color:'var(--blue)',   cls:'breath-in',   dur:4},
@@ -946,8 +987,7 @@ function showCombatStep(){
     document.getElementById('panic-step-hint').innerText = step.hint;
 
     const wrap = document.getElementById('panic-breath-wrap');
-    const btnTxt = _combatIdx < _combatSteps.length - 1 ? 'Сделал →' : 'Контроль возвращён ✓';
-    document.getElementById('panic-step-btn').innerText = btnTxt;
+    document.getElementById('panic-step-btn').innerHTML = combatStepButtonHTML();
 
     // breath animations
     if(step.breath === 'sigh'){
@@ -966,6 +1006,19 @@ function showCombatStep(){
     }
 
     if(navigator.vibrate) navigator.vibrate(50);
+}
+
+function combatStepButtonHTML(){
+    const isLast = _combatIdx >= _combatSteps.length - 1;
+    const isPanic = _combatSteps === COMBAT.panic;
+    if(isPanic){
+        if(_combatIdx === 0) return '<span class="panic-btn-hint">нажми когда готов</span>';
+        if(_combatIdx === 1) return '<span class="panic-btn-action">выдохнул? далее →</span>';
+        if(_combatIdx === 2) return '<span class="panic-btn-hint">нажми когда готов</span>';
+        if(isLast) return '<span class="panic-btn-hint">нажми когда готов</span><span class="panic-btn-action">Контроль возвращён ✓</span>';
+    }
+    const btnTxt = isLast ? 'Контроль возвращён ✓' : 'Сделал →';
+    return '<span class="panic-btn-hint">нажми когда готов</span><span class="panic-btn-action">' + btnTxt + '</span>';
 }
 
 function combatNext(){
@@ -994,6 +1047,7 @@ function backToSelect(){
 // двойной вдох носом (2+1 сек) → медленный выдох (6 сек)
 function startSigh(){
     stopBreath();
+    _sighCycleCount = 0;
     const bv = document.getElementById('bv');
     const cnt = document.getElementById('bc-count');
     cnt.classList.add('hidden');
@@ -1005,7 +1059,14 @@ function startSigh(){
     ];
     let si = 0;
     const runSigh = () => {
-        if(si >= sighSteps.length) return;
+        if(si >= sighSteps.length){
+            _sighCycleCount++;
+            if(_sighCycleCount >= 3){
+                document.getElementById('panic-step-txt').innerText = 'ГОТОВО';
+                return;
+            }
+            si = 0;
+        }
         const s = sighSteps[si];
         bv.className = 'breath-circle ' + s.cls;
         bv.querySelector('.bc-icon').innerText = s.icon;
@@ -1083,6 +1144,25 @@ function unlockApp(){
     clearInterval(_boxTick); clearTimeout(_sighTick);
     document.getElementById('panic-overlay').classList.add('hidden');
     document.getElementById('app-root').classList.remove('hidden');
+    showEntryChooser();
+    try{ history.replaceState('choose',''); }catch(e){}
+}
+
+function showEntryChooser(){
+    switchView('v-choose');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+}
+function entryPickTheory(){
+    goNav('v-theory','n-theory');
+    try{ history.replaceState('theory',''); }catch(e){}
+}
+function entryPickScenarios(){
+    goNav('v-home','n-home');
+    try{ history.replaceState('home',''); }catch(e){}
+}
+function entryPickTrainer(){
+    goNav('v-quiz','n-quiz');
+    try{ history.replaceState('quiz',''); }catch(e){}
 }
 
 function showPanic(){
@@ -1127,7 +1207,7 @@ function switchView(id){
     document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     if(id!=='v-scene'){stopTimer();stopMetro();}
-    const noBack = ['v-home','v-mist','v-theory','v-quiz'];
+    const noBack = ['v-choose','v-home','v-mist','v-theory','v-quiz'];
     updateBackBar(!noBack.includes(id), 'Назад');
     if(!noBack.includes(id)) pushNav(id);
     window.scrollTo(0,0);
